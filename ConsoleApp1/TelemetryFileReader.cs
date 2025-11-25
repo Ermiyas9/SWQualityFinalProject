@@ -10,6 +10,7 @@ namespace ConsoleApp1
 	{
 		private readonly string filePath;
 
+		// Constructor
 		public TelemetryFileReader(string filePath)
 		{
 			this.filePath = filePath;

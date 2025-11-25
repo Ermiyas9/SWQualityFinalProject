@@ -1,6 +1,7 @@
 ﻿using ConsoleApp1;
 using System;
 using System.Configuration;
+using System.Text;
 
 Console.WriteLine("AircraftTransmitter starting...");
 
@@ -16,7 +17,7 @@ if (string.IsNullOrWhiteSpace(telemetryFilePath) ||
 	string.IsNullOrWhiteSpace(serverPortString) ||
 	string.IsNullOrWhiteSpace(sendIntervalMsString))
 {
-	throw new InvalidOperationException("I need to check App.config, one of the settings is missing.");
+	throw new InvalidOperationException("I need to check App.config, one or more required settings are missing.");
 }
 
 if (!int.TryParse(serverPortString, out var serverPort))
@@ -36,17 +37,26 @@ Console.WriteLine($"Send interval: {sendIntervalMs} ms");
 Console.WriteLine();
 
 var reader = new TelemetryFileReader(telemetryFilePath);
-var lineCount = 0;
+var builder = new PacketBuilder(tailNumber);
 
+var index = 0;
 foreach (var line in reader.ReadLines())
 {
-	if (lineCount < 5)
+	if (index >= 3)
 	{
-		Console.WriteLine(line);
+		break;
 	}
 
-	lineCount++;
+	var packetBytes = builder.BuildPacket(line);
+	var packetText = Encoding.UTF8.GetString(packetBytes);
+
+	Console.WriteLine("Raw line:");
+	Console.WriteLine(line);
+	Console.WriteLine("Packet:");
+	Console.WriteLine(packetText);
+	Console.WriteLine();
+
+	index++;
 }
 
-Console.WriteLine();
-Console.WriteLine($"Total lines read: {lineCount}");
+Console.WriteLine("PacketBuilder test completed.");
