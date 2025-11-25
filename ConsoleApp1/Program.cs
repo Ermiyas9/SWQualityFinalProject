@@ -1,26 +1,52 @@
-﻿using System;
+﻿using ConsoleApp1;
+using System;
 using System.Configuration;
 
 Console.WriteLine("AircraftTransmitter starting...");
 
-// Read connection string from App.config
-string connectionString = GetConnectionString();
+var telemetryFilePath = ConfigurationManager.AppSettings["TelemetryFilePath"];
+var tailNumber = ConfigurationManager.AppSettings["TailNumber"];
+var serverIp = ConfigurationManager.AppSettings["ServerIp"];
+var serverPortString = ConfigurationManager.AppSettings["ServerPort"];
+var sendIntervalMsString = ConfigurationManager.AppSettings["SendIntervalMs"];
 
-// Print a preview (do NOT show the full password in logs)
-Console.WriteLine("Connection string loaded from App.config.");
-
-// TODO later: call my DbTester and telemetry sender loop here.
-
-// Local helper function that reads the connection string
-static string GetConnectionString()
+if (string.IsNullOrWhiteSpace(telemetryFilePath) ||
+	string.IsNullOrWhiteSpace(tailNumber) ||
+	string.IsNullOrWhiteSpace(serverIp) ||
+	string.IsNullOrWhiteSpace(serverPortString) ||
+	string.IsNullOrWhiteSpace(sendIntervalMsString))
 {
-	var cs = ConfigurationManager.ConnectionStrings["FdmsDb"]?.ConnectionString;
+	throw new InvalidOperationException("I need to check App.config, one of the settings is missing.");
+}
 
-	if (string.IsNullOrWhiteSpace(cs))
+if (!int.TryParse(serverPortString, out var serverPort))
+{
+	throw new InvalidOperationException("I need a valid integer for ServerPort in App.config.");
+}
+
+if (!int.TryParse(sendIntervalMsString, out var sendIntervalMs))
+{
+	throw new InvalidOperationException("I need a valid integer for SendIntervalMs in App.config.");
+}
+
+Console.WriteLine($"Telemetry file: {telemetryFilePath}");
+Console.WriteLine($"Tail number: {tailNumber}");
+Console.WriteLine($"Server: {serverIp}:{serverPort}");
+Console.WriteLine($"Send interval: {sendIntervalMs} ms");
+Console.WriteLine();
+
+var reader = new TelemetryFileReader(telemetryFilePath);
+var lineCount = 0;
+
+foreach (var line in reader.ReadLines())
+{
+	if (lineCount < 5)
 	{
-		throw new InvalidOperationException(
-			"Connection string 'FdmsDb' not found. Check App.config <connectionStrings>.");
+		Console.WriteLine(line);
 	}
 
-	return cs;
+	lineCount++;
 }
+
+Console.WriteLine();
+Console.WriteLine($"Total lines read: {lineCount}");
