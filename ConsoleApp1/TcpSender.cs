@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
-	internal class TcpSender : IAsyncDisposable
+	internal class TcpSender : IDisposable
 	{
 		private readonly string serverIp;
 		private readonly int serverPort;
 
-		private TcpClient? client; // it can be null
-		private NetworkStream? stream; // it can be null
+		private TcpClient client;
+		private NetworkStream stream;
 
 		public TcpSender(string serverIp, int serverPort)
 		{
@@ -21,37 +17,37 @@ namespace ConsoleApp1
 			this.serverPort = serverPort;
 		}
 
-		// connect to Ground Terminal
-		public async Task ConnectAsync()
+		public void Connect()
 		{
-			client = new TcpClient();
-			await client.ConnectAsync(serverIp, serverPort);
+			client = new TcpClient(serverIp, serverPort);
 			stream = client.GetStream();
 		}
 
-		// send a packet (with length prefix)
-		public async Task SendPacketAsync(byte[] packet)
+		public void SendPacket(byte[] packet)
 		{
 			if (stream == null)
 			{
 				throw new InvalidOperationException("Are you connected?");
 			}
 
-			var lengthBytes = BitConverter.GetBytes(packet.Length);
-			await stream.WriteAsync(lengthBytes.AsMemory());
-			await stream.WriteAsync(packet.AsMemory());
-			await stream.FlushAsync();
+			byte[] lengthBytes = BitConverter.GetBytes(packet.Length);
+
+			stream.Write(lengthBytes, 0, lengthBytes.Length);
+			stream.Write(packet, 0, packet.Length);
+			stream.Flush();
 		}
 
-		public async ValueTask DisposeAsync()
+		public void Dispose()
 		{
 			if (stream != null)
 			{
-				await stream.DisposeAsync();
+				stream.Dispose();
 			}
 
-			// close if not null
-			client?.Close();
+			if (client != null)
+			{
+				client.Close();
+			}
 		}
 	}
 }

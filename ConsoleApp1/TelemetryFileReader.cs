@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace ConsoleApp1
 {
@@ -10,7 +7,6 @@ namespace ConsoleApp1
 	{
 		private readonly string filePath;
 
-		// Constructor
 		public TelemetryFileReader(string filePath)
 		{
 			this.filePath = filePath;
@@ -20,7 +16,7 @@ namespace ConsoleApp1
 		{
 			if (!File.Exists(filePath))
 			{
-				throw new FileNotFoundException($"Telemetry file not exists: {filePath}");
+				throw new FileNotFoundException($"Telemetry file not found: {filePath}");
 			}
 
 			return File.ReadLines(filePath);

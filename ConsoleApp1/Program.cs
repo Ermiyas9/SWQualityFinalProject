@@ -1,14 +1,13 @@
 ﻿using ConsoleApp1;
 using System;
 using System.Configuration;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
-var telemetryFilePath = ConfigurationManager.AppSettings["TelemetryFilePath"];
-var tailNumber = ConfigurationManager.AppSettings["TailNumber"];
-var serverIp = ConfigurationManager.AppSettings["ServerIp"];
-var serverPortString = ConfigurationManager.AppSettings["ServerPort"];
-var sendIntervalMsString = ConfigurationManager.AppSettings["SendIntervalMs"];
+string telemetryFilePath = ConfigurationManager.AppSettings["TelemetryFilePath"];
+string tailNumber = ConfigurationManager.AppSettings["TailNumber"];
+string serverIp = ConfigurationManager.AppSettings["ServerIp"];
+string serverPortString = ConfigurationManager.AppSettings["ServerPort"];
+string sendIntervalMsString = ConfigurationManager.AppSettings["SendIntervalMs"];
 
 if (string.IsNullOrWhiteSpace(telemetryFilePath) ||
 	string.IsNullOrWhiteSpace(tailNumber) ||
@@ -19,12 +18,12 @@ if (string.IsNullOrWhiteSpace(telemetryFilePath) ||
 	throw new InvalidOperationException("There are required settings missing in your App.config.");
 }
 
-if (!int.TryParse(serverPortString, out var serverPort))
+if (!int.TryParse(serverPortString, out int serverPort))
 {
 	throw new InvalidOperationException("There is no valid integer for ServerPort in your App.config.");
 }
 
-if (!int.TryParse(sendIntervalMsString, out var sendIntervalMs))
+if (!int.TryParse(sendIntervalMsString, out int sendIntervalMs))
 {
 	throw new InvalidOperationException("There is no valid integer for SendIntervalMs in your App.config.");
 }
@@ -36,36 +35,37 @@ Console.WriteLine($"Server: {serverIp}:{serverPort}");
 Console.WriteLine($"Send interval: {sendIntervalMs} ms");
 Console.WriteLine();
 
-var reader = new TelemetryFileReader(telemetryFilePath);
-var builder = new PacketBuilder(tailNumber);
+TelemetryFileReader reader = new TelemetryFileReader(telemetryFilePath);
+PacketBuilder builder = new PacketBuilder(tailNumber);
+TcpSender sender = new TcpSender(serverIp, serverPort);
 
-await RunAsync();
-
-async Task RunAsync()
+try
 {
-	var sender = new TcpSender(serverIp, serverPort);
-
 	Console.WriteLine("Connecting to Ground Terminal...");
 
-	await sender.ConnectAsync();
+	sender.Connect();
 
 	Console.WriteLine("Connected. Starting transmission.");
 	Console.WriteLine();
 
-	var lineIndex = 0;
+	int lineIndex = 0;
 
-	foreach (var line in reader.ReadLines())
+	foreach (string line in reader.ReadLines())
 	{
-		var packetBytes = builder.BuildPacket(line);
+		byte[] packetBytes = builder.BuildPacket(line);
 
-		await sender.SendPacketAsync(packetBytes);
+		sender.SendPacket(packetBytes);
 
 		Console.WriteLine($"Sent line {lineIndex + 1}: {line.Trim()}");
 		lineIndex++;
 
-		await Task.Delay(sendIntervalMs);
+		Thread.Sleep(sendIntervalMs);
 	}
 
 	Console.WriteLine();
 	Console.WriteLine($"Transmission completed. Total packets sent: {lineIndex}");
+}
+finally
+{
+	sender.Dispose();
 }
