@@ -17,11 +17,18 @@ namespace GroundTerminalApp
     /// <summary>
     /// Interaction logic for GroundTerminalDashboard.xaml
     /// </summary>
-    public partial class GroundTerminalDashboard : Window
+    public partial class FDMSDashboard : Window
     {
-        public GroundTerminalDashboard()
+        public FDMSDashboard()
         {
             InitializeComponent();
+        }
+
+     
+
+        private void DashboardConnection_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
