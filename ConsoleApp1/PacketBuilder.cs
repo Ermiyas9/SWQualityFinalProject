@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace ConsoleApp1
+namespace AircraftTransmitter
 {
 	internal class PacketBuilder
 	{

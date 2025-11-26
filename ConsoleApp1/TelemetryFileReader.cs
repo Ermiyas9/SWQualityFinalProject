@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace ConsoleApp1
+namespace AircraftTransmitter
 {
 	internal class TelemetryFileReader
 	{

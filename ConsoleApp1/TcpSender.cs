@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 
-namespace ConsoleApp1
+namespace AircraftTransmitter
 {
 	internal class TcpSender : IDisposable
 	{

@@ -1,4 +1,4 @@
-﻿using ConsoleApp1;
+﻿using AircraftTransmitter;
 using System;
 using System.Configuration;
 using System.Threading;
