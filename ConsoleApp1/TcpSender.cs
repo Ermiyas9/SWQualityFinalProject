@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace AircraftTransmitter
 {
-	internal class TcpSender : IDisposable
+	public class TcpSender : IDisposable
 	{
 		private readonly string serverIp;
 		private readonly int serverPort;
