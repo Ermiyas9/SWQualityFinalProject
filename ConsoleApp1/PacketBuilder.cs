@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AircraftTransmitter
 {
-	internal class PacketBuilder
+	public class PacketBuilder
 	{
 		private readonly string tailNumber;
 
