@@ -1,4 +1,10 @@
-﻿using System;
+﻿// File:            PacketBuilder.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Converts a raw telemetry line into a length-prefixed packet
+//                  with a simple checksum, ready to be sent over TCP.
+
+using System;
 using System.Globalization;
 using System.Text;
 

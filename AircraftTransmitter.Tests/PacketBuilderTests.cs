@@ -1,4 +1,9 @@
-﻿using AircraftTransmitter;
+﻿// File:            PacketBuilderTests.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Unit test for the PacketBuilder class.
+
+using AircraftTransmitter;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

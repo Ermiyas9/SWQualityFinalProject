@@ -1,4 +1,11 @@
-﻿using AircraftTransmitter;
+﻿// File:            Program.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Entry point for the aircraft transmitter console application.
+//                  Reads settings from App.config, loads a telemetry file, builds
+//                  packets, and sends them to the Ground Terminal over TCP.
+
+using AircraftTransmitter;
 using System;
 using System.Configuration;
 using System.Threading;

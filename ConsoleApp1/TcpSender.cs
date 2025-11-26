@@ -1,4 +1,10 @@
-﻿using System;
+﻿// File:            TcpSender.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Handles the TCP connection to the Ground Terminal.
+//                  I connect as a client and send length-prefixed packets.
+
+using System;
 using System.Net.Sockets;
 
 namespace AircraftTransmitter
@@ -16,7 +22,7 @@ namespace AircraftTransmitter
 			this.serverIp = serverIp;
 			this.serverPort = serverPort;
 		}
-
+		
 		public void Connect()
 		{
 			client = new TcpClient(serverIp, serverPort);

@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// File:            TelemetryFileReader.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Reads telemetry lines from a text file so I can feed them
+//                  into the packet builder and transmitter.
+
+using System.Collections.Generic;
 using System.IO;
 
 namespace AircraftTransmitter

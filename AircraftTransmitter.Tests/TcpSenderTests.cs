@@ -1,4 +1,11 @@
-﻿using AircraftTransmitter;
+﻿// File:            TcpSenderTests.cs
+// Programmer:      Mher Keshishian
+// First version:   2025-11-22
+// Purpose:         Unit test for the TcpSender class. I verify that a packet
+//                  is sent with a length prefix and that the server receives
+//                  the expected message body.
+
+using AircraftTransmitter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Net;
