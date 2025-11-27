@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static GroundTerminalApp.FDMSDashboard;
 
+
 namespace GroundTerminalApp
 {
     /// <summary>
@@ -22,7 +27,13 @@ namespace GroundTerminalApp
     /// </summary>
     public partial class FDMSDashboard : Window
     {
-        public FDMSDashboard()
+		// Tcp server components
+		private TcpListener tcpListener;
+		private CancellationTokenSource listenerCancellation;
+		private TheCounterComponent packetCounter;
+		private const int ListenPort = 5000;
+
+		public FDMSDashboard()
         {
             InitializeComponent();
 
@@ -30,14 +41,149 @@ namespace GroundTerminalApp
             var searchPage = new SearchingPageApp();
             searchPage.UpdateConnectionStatus(connectionStatusLbl, connStatChkBx, true);
 
+			// Initialize packet counter and start TCP server
+			packetCounter = new TheCounterComponent();
+            StartTcpServer();
 
-        }
+		}
+
+		// starting the tcp server
+		private void StartTcpServer()
+		{
+			listenerCancellation = new CancellationTokenSource();
+			tcpListener = new TcpListener(IPAddress.Any, ListenPort);
+			tcpListener.Start();
+
+			Task acceptTask = AcceptClients(listenerCancellation.Token);
+		}
+
+		// stopping the tcp server
+		private void StopTcpServer()
+		{
+			try
+			{
+				if (listenerCancellation != null)
+				{
+					listenerCancellation.Cancel();
+				}
+
+				if (tcpListener != null)
+				{
+					tcpListener.Stop();
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error stopping TCP server: " + ex.Message);
+			}
+		}
+
+		// accepting clients
+		private async Task AcceptClients(CancellationToken token)
+		{
+			try
+			{
+				while (true)
+				{
+					TcpClient client = await tcpListener.AcceptTcpClientAsync();
+					Task clientTask = Task.Run(() => HandleClient(client, token));
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error accepting client: " + ex.Message);
+			}
+		}
 
 
+		// handling clients by reading packets and processing them
+		private async Task HandleClient(TcpClient client, CancellationToken token)
+		{
+			using (client)
+			{
+				NetworkStream stream = client.GetStream();
+				byte[] lengthBuffer = new byte[4];
+
+				try
+				{
+					while (true)
+					{
+						int lengthRead = await ReadFromStream(stream, lengthBuffer, 0, 4, token);
+						if (lengthRead != 4)
+						{
+							break;
+						}
+
+						int packetLength = BitConverter.ToInt32(lengthBuffer, 0);
+						if (packetLength <= 0)
+						{
+							break;
+						}
+
+						byte[] packetBuffer = new byte[packetLength];
+						int packetRead = await ReadFromStream(stream, packetBuffer, 0, packetLength, token);
+						if (packetRead != packetLength)
+						{
+							break;
+						}
+
+						bool ok = packetCounter.ProcessPacket(packetBuffer);
+						if (ok)
+						{
+							Dispatcher.Invoke(UpdateDashboardFromCounter);
+						}
+					}
+				}
+				catch (Exception)
+				{
+				}
+			}
+		}
+
+		// reading exact number of bytes from the network stream
+		private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
+		{
+			int totalRead = 0;
+
+			while (totalRead < count)
+			{
+				int read = await stream.ReadAsync(buffer, offset + totalRead, count - totalRead, token);
+
+				if (read <= 0)
+				{
+					break;
+				}
+
+				totalRead += read;
+			}
+
+			return totalRead;
+		}
+
+		// updating the dashboard UI (packet counter section) from the packet counter
+		private void UpdateDashboardFromCounter()
+		{
+			TelemetryData telemetry = packetCounter.LastTelemetry;
+			int receivedCount = packetCounter.Received;
+			int sentCount = packetCounter.Sent;
+
+			// Update labels (we don't have sent count in here yet)
+			LblReceived.Content = $"Received: {receivedCount}";
+			LblSent.Content = $"Sent: {sentCount}";
+
+			if (telemetry != null)
+			{
+				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+			}
+			else
+			{
+				this.Title = $"FDMS Dashboard - Received: {receivedCount}";
+			}
+		}
 
 
-        // we need a base class for the dash board components here and with one render method
-        public class DashBoardComponents
+		// we need a base class for the dash board components here and with one render method
+		public class DashBoardComponents
         {
 
 

@@ -101,8 +101,8 @@
                            Foreground="White"
                            FontSize="16"
                            FontWeight="Bold" />
-                    <Label Content="Received" Foreground="White" Margin="5,0" />
-                    <Label Content="Sent" Foreground="White" Margin="5,0" />
+                    <Label x:Name="LblReceived" Content="Received" Foreground="White" Margin="5,0" />
+                    <Label x:Name="LblSent" Content="Sent" Foreground="White" Margin="5,0" />
                 </StackPanel>
             </Border>
         </StackPanel>
