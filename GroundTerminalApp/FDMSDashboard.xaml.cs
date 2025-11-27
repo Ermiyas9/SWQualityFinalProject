@@ -31,7 +31,8 @@ namespace GroundTerminalApp
 		private TcpListener tcpListener;
 		private CancellationTokenSource listenerCancellation;
 		private TheCounterComponent packetCounter;
-		private const int ListenPort = 5000;
+		private const int DefaultListenPort = 5000; // default port if it's not set in config
+		private int listenPort;
 
 		public FDMSDashboard()
         {
@@ -51,7 +52,18 @@ namespace GroundTerminalApp
 		private void StartTcpServer()
 		{
 			listenerCancellation = new CancellationTokenSource();
-			tcpListener = new TcpListener(IPAddress.Any, ListenPort);
+
+			string portText = ConfigurationManager.AppSettings["ServerPort"];
+			int port;
+
+			if (!int.TryParse(portText, out port))
+			{
+				port = DefaultListenPort;
+			}
+
+			listenPort = port;
+
+			tcpListener = new TcpListener(IPAddress.Any, listenPort);
 			tcpListener.Start();
 
 			Task acceptTask = AcceptClients(listenerCancellation.Token);
