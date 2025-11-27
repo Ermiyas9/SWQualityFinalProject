@@ -74,11 +74,11 @@
         <!-- here it will be better if we display the visual display of the charts -->
         <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="100">
             <Border Background="#333" Width="250" Height="151" Margin="10">
-				<StackPanel>
+				<Grid>
 					<Label Content="Altitude" Foreground="White" Margin="10,10,100,0" />
-					<Label x:Name="LblAltitudeValue" Content="Altitude: N/A" Foreground="White" Margin="10,0,10,0" />
+					<Canvas x:Name="AltitudeCanvas" Margin="10,30,10,10" />
 					<!-- so if we display line chart here is nice -->
-				</StackPanel>
+				</Grid>
             </Border>
 
             <Border Background="#333" Width="250" Height="154" Margin="10">

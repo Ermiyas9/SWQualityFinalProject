@@ -34,6 +34,9 @@ namespace GroundTerminalApp
 		private const int DefaultListenPort = 5000; // default port if it's not set in config
 		private int listenPort;
 
+		private List<double> altitudeHistory = new List<double>();
+		private const int MaxAltitudePoints = 50;
+
 		public FDMSDashboard()
         {
             InitializeComponent();
@@ -180,6 +183,96 @@ namespace GroundTerminalApp
 			return totalRead;
 		}
 
+		// updating the altitude chart with new altitude data
+		private void UpdateAltitudeChart(double altitude)
+		{
+			altitudeHistory.Add(altitude);
+
+			if (altitudeHistory.Count > MaxAltitudePoints)
+			{
+				altitudeHistory.RemoveAt(0);
+			}
+
+			AltitudeCanvas.Children.Clear();
+
+			// wait for more points
+			if (altitudeHistory.Count < 2)
+			{
+				return;
+			}
+
+			double width = AltitudeCanvas.ActualWidth;
+			double height = AltitudeCanvas.ActualHeight;
+
+			if (width <= 0 || height <= 0)
+			{
+				return;
+			}
+
+			double padding = 5.0;
+			double innerWidth = width - padding * 2;
+			double innerHeight = height - padding * 2;
+
+			double minAltitude = altitudeHistory.Min();
+			double maxAltitude = altitudeHistory.Max();
+
+			if (Math.Abs(maxAltitude - minAltitude) < 0.0001)
+			{
+				maxAltitude = minAltitude + 1.0;
+			}
+
+			Line xAxis = new Line();
+			xAxis.X1 = padding;
+			xAxis.Y1 = padding + innerHeight;
+			xAxis.X2 = padding + innerWidth;
+			xAxis.Y2 = padding + innerHeight;
+			xAxis.Stroke = Brushes.Gray;
+			xAxis.StrokeThickness = 1;
+			AltitudeCanvas.Children.Add(xAxis);
+
+			Line yAxis = new Line();
+			yAxis.X1 = padding;
+			yAxis.Y1 = padding;
+			yAxis.X2 = padding;
+			yAxis.Y2 = padding + innerHeight;
+			yAxis.Stroke = Brushes.Gray;
+			yAxis.StrokeThickness = 1;
+			AltitudeCanvas.Children.Add(yAxis);
+
+			Polyline line = new Polyline();
+			line.Stroke = Brushes.Lime;
+			line.StrokeThickness = 1.5;
+
+			int count = altitudeHistory.Count;
+			double xStep = innerWidth / (MaxAltitudePoints - 1);
+
+			for (int i = 0; i < count; i++)
+			{
+				double x = padding + xStep * i;
+
+				double value = altitudeHistory[i];
+				double normalized = (value - minAltitude) / (maxAltitude - minAltitude);
+				double y = padding + innerHeight - normalized * innerHeight;
+
+				Point p = new Point(x, y);
+				line.Points.Add(p);
+
+				Ellipse dot = new Ellipse();
+				dot.Width = 4;
+				dot.Height = 4;
+				dot.Fill = Brushes.Lime;
+
+				Canvas.SetLeft(dot, p.X - dot.Width / 2);
+				Canvas.SetTop(dot, p.Y - dot.Height / 2);
+
+				AltitudeCanvas.Children.Add(dot);
+			}
+
+			// adding the line to the canvas
+			AltitudeCanvas.Children.Add(line);
+		}
+
+
 		// updating the dashboard UI (packet counter section) from the packet counter
 		private void UpdateDashboardFromCounter()
 		{
@@ -197,7 +290,8 @@ namespace GroundTerminalApp
 				LblTailNumber.Content = $"Tail number: {telemetry.TailNumber}";
 				LblLastUpdate.Content = $"Last update: {telemetry.Timestamp:yyyy-MM-dd HH:mm:ss}";
 
-				LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
+				UpdateAltitudeChart(telemetry.Altitude);
+
 				LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
 				LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
 
