@@ -31,7 +31,7 @@ namespace GroundTerminalApp
             bool connected = ConnectToDatabase();
 
             // pass the controls as parameters
-            UpdateConnectionStatus(connectionStatusLbl, connStatusChkBox, connected);
+            UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
         }
 
         // i added this to store the database connection to a class level field 
@@ -82,25 +82,29 @@ namespace GroundTerminalApp
 
             
         }
-        public void UpdateConnectionStatus(Label statusLabel, CheckBox statusCheckBox, bool isConnected)
+        public void UpdateConnectionStatus(Label connectionStatusLbl, Image onlineIcon, Image offlineIcon, bool isConnected)
         {
+
             if (isConnected)
             {
                 // if the connection is connected then change the check box and its label into green
-                statusLabel.Foreground = Brushes.Green;
-                statusCheckBox.Background = Brushes.Green;
-                statusCheckBox.Content = "ONLINE";
-                statusCheckBox.Foreground = Brushes.Green;
+                // so when its online i will show the online icon that i got
+                // from https://icons8.com/ and when its offline will do the same but offline icon
+                connectionStatusLbl.Foreground = Brushes.Green;
+                connectionStatusLbl.Content = "ONLINE";
+                onlineIcon.Visibility = Visibility.Visible;
+                offlineIcon.Visibility = Visibility.Collapsed;
             }
             else
             {
                 // otherwise keep it red
-                statusLabel.Foreground = Brushes.Red;
-                statusCheckBox.Content = "OFFLINE";
-                statusCheckBox.Background = Brushes.Red;
-                statusCheckBox.Foreground = Brushes.Red;
+                connectionStatusLbl.Foreground = Brushes.Red;
+                connectionStatusLbl.Content = "OFFLINE"; // fixed to show OFFLINE correctly
+                offlineIcon.Visibility = Visibility.Visible;
+                onlineIcon.Visibility = Visibility.Collapsed;
             }
         }
+
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {

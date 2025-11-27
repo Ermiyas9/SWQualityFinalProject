@@ -119,46 +119,50 @@
             </Border>
         </StackPanel>
 
-        <Label x:Name="connectionStatusLbl"
-               Content="Connection Status"
-               Background="Green"
-               Foreground="White"
-               FontSize="20"
-               FontWeight="Bold"
-               Canvas.Left="915"
-               Canvas.Top="524" />
+        <!-- this is a connection status block and it is  toggleable symbol like when its online it shows  the online green mark when offline will show offline from icons8 webstie  -->
+        <Grid Canvas.Left="30" Canvas.Top="531" Width="265" Height="120">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <!-- Heading row -->
+                <RowDefinition Height="*" />
+                <!-- Symbol + status row -->
+            </Grid.RowDefinitions>
 
-        <CheckBox x:Name="connStatChkBx"
-                  Content="Remote Database"
-                  Foreground="White"
-                  FontSize="20"
-                  Canvas.Left="920"
-                  Canvas.Top="589"
-                  Height="40"
-                  Width="240" />
+            <!-- Heading -->
+            <Label x:Name="connectionStatusHeading"
+    Content="Connection Status"
+    FontSize="22"
+    FontWeight="Bold"
+    Foreground="White"
+    Grid.Row="0"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Center"/>
 
-        <StackPanel Orientation="Horizontal"
-                    Canvas.Left="320"
-                    Canvas.Top="294"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top">
+            <!-- Symbol + status text -->
+            <StackPanel Orientation="Horizontal"
+         Grid.Row="1"
+         HorizontalAlignment="Left"
+         VerticalAlignment="Center"
+         Margin="0,10,0,0">
+                <Image x:Name="onlineIcon"
+        Source="https://img.icons8.com/emoji/48/check-mark-button-emoji.png"
+        Width="48" Height="48"
+        Visibility="Collapsed"/>
 
-            <Border Background="#333" Width="250" Height="151" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- so if we display line chart here is nice -->
-            </Border>
+                <Image x:Name="offlineIcon"
+        Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+        Width="48" Height="48"
+        Visibility="Visible"/>
 
-            <Border Background="#333" Width="250" Height="154" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- Chart control here -->
-            </Border>
+                <Label x:Name="connectionStatusLbl"
+        Content="OFFLINE"
+        FontSize="18"
+        Foreground="Red"
+        VerticalAlignment="Center"
+        Margin="10,0,0,0"/>
+            </StackPanel>
+        </Grid>
 
-            <Border Background="#333" Width="250" Height="154" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- Chart control here -->
-            </Border>
-
-        </StackPanel>
 
     </Canvas>
 </Window>

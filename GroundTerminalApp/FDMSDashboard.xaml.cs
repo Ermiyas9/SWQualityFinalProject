@@ -38,9 +38,17 @@ namespace GroundTerminalApp
         {
             InitializeComponent();
 
-            // so I can call that I created in another window, since that method takes label check box and bool variable i will pass those 
+            // so I can call that I created in another window, since that method takes label 
+            // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
+            // so i am passing the images as a parameter
             var searchPage = new SearchingPageApp();
-            searchPage.UpdateConnectionStatus(connectionStatusLbl, connStatChkBx, true);
+            bool connected = searchPage.ConnectToDatabase();
+
+            // pass the controls as parameters using the real connection state so it gets offline when its offline 
+            searchPage.UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
+
+
+
 
 			// Initialize packet counter and start TCP server
 			packetCounter = new TheCounterComponent();
