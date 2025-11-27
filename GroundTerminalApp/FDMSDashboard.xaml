@@ -19,7 +19,8 @@
                        Height="76" />
 
             <!-- this are buttons where we can navigates to other windows -->
-            <Button Content="Search &amp; Query"
+            <Button x:Name="BtnSearchAndQuery" 
+					Content="Search &amp; Query"
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
                     FontSize="20"
@@ -27,9 +28,10 @@
                     Background="#333333"
                     Foreground="White"
                     Width="290"
-                    Height="76" />
+                    Height="76" Click="BtnSearchAndQuery_Click" />
 
-            <Button Content="System Logs"
+            <Button x:Name="BtnSystemLogs" 
+					Content="System Logs"
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
                     FontSize="20"
@@ -37,7 +39,7 @@
                     Background="#333333"
                     Foreground="White"
                     Width="290"
-                    Height="76" />
+                    Height="76" Click="BtnSystemLogs_Click" />
 
             <Button Content="User"
                     HorizontalAlignment="Left"

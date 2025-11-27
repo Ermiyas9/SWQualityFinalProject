@@ -350,11 +350,18 @@ namespace GroundTerminalApp
             }
         }
 
+		private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
+		{
+            SearchingPageApp searchPage = new SearchingPageApp();
+            searchPage.Owner = this;
+            searchPage.Show();
+		}
 
-
-
-         
-
-
-}
+		private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
+		{
+            logsPage logsPage = new logsPage();
+            logsPage.Owner = this;
+            logsPage.Show();
+		}
+	}
 }
