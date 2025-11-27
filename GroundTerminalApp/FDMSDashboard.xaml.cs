@@ -194,6 +194,8 @@ namespace GroundTerminalApp
 			if (telemetry != null)
 			{
 				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+				LblTailNumber.Content = $"Tail number: {telemetry.TailNumber}";
+				LblLastUpdate.Content = $"Last update: {telemetry.Timestamp:yyyy-MM-dd HH:mm:ss}";
 
 				LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
 				LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";

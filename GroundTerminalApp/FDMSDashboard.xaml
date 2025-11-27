@@ -83,7 +83,7 @@
 
             <Border Background="#333" Width="250" Height="154" Margin="10">
 				<StackPanel>
-					<Label Content="Attitude" Foreground="White" Margin="10,10,10,0" />
+					<Label Content="Pitch and Bank" Foreground="White" Margin="10,10,10,0" />
 					<Label x:Name="LblPitchValue" Content="Pitch: N/A" Foreground="White" Margin="10,0,10,0" />
 					<Label x:Name="LblBankValue" Content="Bank: N/A" Foreground="White" Margin="10,0,10,0" />
 				    <!-- Chart control here -->
@@ -105,17 +105,19 @@
         <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="320" />
 
         <!-- Footer -->
-        <StackPanel Canvas.Left="320" Canvas.Top="500">
+        <StackPanel Canvas.Left="320" Canvas.Top="450">
             <!-- Border for Packet Counter section -->
-            <Border Background="#333" Height="129" Width="485">
+            <Border Background="#333" Height="180" Width="485">
                 <StackPanel Margin="10">
-                    <Label Content="Packet Counter"
+                    <Label Content="Flight Status"
                            Foreground="White"
                            FontSize="16"
                            FontWeight="Bold" />
-                    <Label x:Name="LblReceived" Content="Received" Foreground="White" Margin="5,0" />
-                    <Label x:Name="LblSent" Content="Sent" Foreground="White" Margin="5,0" />
-                </StackPanel>
+					<Label x:Name="LblReceived" Content="Received" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
+					<Label x:Name="LblSent" Content="Sent" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
+					<Label x:Name="LblTailNumber" Content="Tail number: N/A" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
+					<Label x:Name="LblLastUpdate" Content="Last update: N/A" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
+				</StackPanel>
             </Border>
         </StackPanel>
 
