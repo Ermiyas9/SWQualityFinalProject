@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="logsPage" Height="450" Width="800">
     <Grid>
-        <!-- place status controls at the bottom -->
+        <!-- placing the status controls at the bottom just for checking  -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20">
             <!-- this is the connection status at the bottom -->
             <Label x:Name="connectionStatusLbl"

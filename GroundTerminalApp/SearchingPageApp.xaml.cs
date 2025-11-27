@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -99,6 +100,78 @@ namespace GroundTerminalApp
                 statusCheckBox.Background = Brushes.Red;
                 statusCheckBox.Foreground = Brushes.Red;
             }
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            string ChannelCode = SearchBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(ChannelCode))
+            {
+                MessageBox.Show("Please enter a Flight ID to search.");
+                return;
+            }
+
+            string theSourceTableName = "Channel";
+
+            string theSQLQuery = $@"SELECT ChannelName, ChannelCode, Description 
+                                   FROM {theSourceTableName} 
+                                   WHERE ChannelId = @ChannelId";
+
+
+            // Create the output list
+            List<string> theOutputData = new List<string>();
+
+            // then call the load data method to get the datas from the database 
+            LoadDataFromDatabase(theSQLQuery,  theOutputData);
+
+            // bind the entire list to the ListBox
+            SearchIndxListBox.ItemsSource = theOutputData;
+
+            //for (int i = 0; i < theOutputData.Count; i++)
+            //{
+            //    // the we will bind the results to the ListBox to display 
+            //    SearchIndxListBox.ItemsSource = theOutputData[i];
+            //}
+
+
+
+        }
+
+        // here I am thinking a generic method that we can call it from any class 
+        // this method will accept query string , table name , and a list which is the results that comes from the database 
+        public void LoadDataFromDatabase ( string theSQLQuery, List<string> theOutputData)
+        {
+            // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
+            // then we run the reader 
+            using (var cmd = new SqlCommand(theSQLQuery, serverConnectionForSearchingPage))
+            {
+                // i need a parameter before i excute the reader 
+                cmd.Parameters.AddWithValue("@ChannelId", SearchBox.Text.Trim());
+
+                // the i will excute a reader and import and save the values in the list of worker info
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    // I will read the data from the reader and save it in the list for each rows
+                    while (reader.Read())
+                    {
+                        // convert each value to its own type and add it to the list
+                        // I dont thing i need to convert them now since the text box only accept string value
+                        // oh maybe i need to make convert them to string? 
+                        string channelName = reader["ChannelName"].ToString();
+                        string channelCode = reader["ChannelCode"].ToString();
+                        string description = reader["Description"].ToString();
+
+                        // then i ombine into one string for display in ListBox
+                        string displayRow = $"{channelName} - {channelCode} - {description}";
+                        theOutputData.Add(displayRow);
+
+
+
+                    }
+                }
+            }
+
         }
 
 
