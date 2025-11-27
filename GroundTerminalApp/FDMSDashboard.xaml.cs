@@ -78,5 +78,7 @@ namespace GroundTerminalApp
             // we will use this class to render between windows like to go to search query setting and so ion
         }
 
+      
+
     }
 }
