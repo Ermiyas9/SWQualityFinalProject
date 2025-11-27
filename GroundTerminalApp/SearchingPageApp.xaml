@@ -1,0 +1,56 @@
+﻿<Window x:Class="GroundTerminalApp.SearchingPageApp"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Search and Query" Height="750" Width="1200"
+        Background="#1E1E2F" FontFamily="Arial" FontSize="20">
+
+    <Canvas Margin="20">
+
+        <!-- this is the main title for the search window -->
+        <Label Content="Search and Query" FontSize="36" FontWeight="Bold"
+               Foreground="White" Canvas.Left="20" Canvas.Top="10"/>
+
+        <!-- this section is for showing the index list we can select from -->
+        <Label Content="Search Index" FontSize="24" FontWeight="Bold"
+               Foreground="White" Canvas.Left="20" Canvas.Top="80"/>
+        <ListBox Canvas.Left="20" Canvas.Top="120" Width="290" Height="324"
+                 Background="#333333" Foreground="White" FontSize="18">
+            <ListBoxItem Content="2025-23433L"/>
+            <ListBoxItem Content="2025-86443L"/>
+            <ListBoxItem Content="2025-20983L"/>
+            <ListBoxItem Content="2025-23493L"/>
+            <ListBoxItem Content="2025-28433L"/>
+            <ListBoxItem Content="2025-26473L"/>
+            <ListBoxItem Content="2025-26433L"/>
+            <ListBoxItem Content="2025-23213L"/>
+        </ListBox>
+
+        <!-- this is the result section where we show metrics and charts -->
+        <Label Content="Search Results" FontSize="24" FontWeight="Bold"
+               Foreground="White" Canvas.Left="350" Canvas.Top="80"/>
+
+        <!-- this part is for showing bar graphs for metrics -->
+        <Border Background="#333333" Canvas.Left="350" Canvas.Top="154" Width="800" Height="200" CornerRadius="10" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <StackPanel Margin="20">
+                <Label Content="Progreesss" Foreground="LightBlue"/>
+                <ProgressBar Value="70" Maximum="100" Height="20" Foreground="LightBlue"/>
+                <Label Content="Progress" Foreground="LightBlue" Margin="0,10,0,0"/>
+                <ProgressBar Value="45" Maximum="100" Height="20" Foreground="LightBlue"/>
+                <Label Content="Progress" Foreground="LightBlue" Margin="0,10,0,0"/>
+                <ProgressBar Value="85" Maximum="100" Height="20" Foreground="LightBlue"/>
+            </StackPanel>
+        </Border>
+
+        <!-- this is just a placeholder for pie chart we will replace later -->
+        <Border Background="#333333" Canvas.Left="750" Canvas.Top="384" Width="300" Height="300" CornerRadius="150">
+            <Label Content="Pie Chart" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- this is the connection status at the bottom -->
+        <Label x:Name="connectionStatusLbl" Content="Connection Status" FontSize="22" FontWeight="Bold"
+               Foreground="Red" Canvas.Left="30" Canvas.Top="531" HorizontalAlignment="Left" VerticalAlignment="Top" Height="53" Width="265"/>
+        <CheckBox x:Name="connStatusChkBox" Content="OFFLINE" Foreground="Red" Canvas.Left="151" Canvas.Top="574" Height="45" Width="154" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+    </Canvas>
+</Window>
+

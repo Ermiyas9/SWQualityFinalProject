@@ -15,13 +15,17 @@ using System.Windows.Shapes;
 namespace GroundTerminalApp
 {
     /// <summary>
-    /// Interaction logic for GroundTerminalDashboard.xaml
+    /// Interaction logic for logsPage.xaml
     /// </summary>
-    public partial class GroundTerminalDashboard : Window
+    public partial class logsPage : Window
     {
-        public GroundTerminalDashboard()
+        public logsPage()
         {
             InitializeComponent();
+
+            // so I can call that I created in another window, since that method takes label check box and bool variable i will pass those 
+            var searchPage = new SearchingPageApp();
+            searchPage.UpdateConnectionStatus(connectionStatusLbl, connStatChkBx, true);
         }
     }
 }
