@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,12 +26,31 @@ namespace GroundTerminalApp
         public SearchingPageApp()
         {
             InitializeComponent();
+            IsConnected(); 
+
+            // so I am just calling this method to check that i am actually connected to the database 
+            if (ConnectToDatabase())
+            {
+                
+                connectionStatusLbl.Foreground = Brushes.Green;
+                connStatusChkBox.Background = Brushes.Green;
+                connStatusChkBox.Content = "ONLINE";
+                connStatusChkBox.Foreground = Brushes.Green; 
+            }
+            else
+            {
+              
+                connectionStatusLbl.Foreground = Brushes.Red;
+                connStatusChkBox.Content = "OFFLINE";
+                connStatusChkBox.Background = Brushes.Red;
+                connStatusChkBox.Foreground = Brushes.Red;
+            }
         }
 
         // i added this to store the database connection to a class level field 
         private SqlConnection serverConnectionForSearchingPage;
 
-        public void ConnectToDatabase()
+        public bool ConnectToDatabase()
         {
             // then call the GetConnection method from another window to get the connection 
             serverConnectionForSearchingPage = ServerConnector.GetConnection();
@@ -46,30 +66,59 @@ namespace GroundTerminalApp
                     // I can just refresh the connection here by closing and reopening it  
                     serverConnectionForSearchingPage.Close();
                     serverConnectionForSearchingPage.Open();
-                    Console.WriteLine("Connection refreshed successfully.");
+
+                    return true;
                 }
                 else if (serverConnectionForSearchingPage.State == System.Data.ConnectionState.Closed)
                 {
                     // so if its closed then open it 
                     serverConnectionForSearchingPage.Open();
-                    Console.WriteLine("Connection opened successfully.");
+
+                    return serverConnectionForSearchingPage.State == System.Data.ConnectionState.Open;
                 }
                 else
                 {
                     // here if their is any other states like Connecting, Broken, etc.
                     serverConnectionForSearchingPage.Open();
                     Console.WriteLine("Connection attempted from non-standard state.");
+
+                    return serverConnectionForSearchingPage.State == System.Data.ConnectionState.Open;
                 }
             }
             catch (SqlException ex)
             {
                 // handle failed connection gracefully
                 Console.WriteLine($"Database connection failed: {ex.Message}");
+                return false;
+            }
+
+
+            
+        }
+        public void IsConnected ()
+        {
+            // so I am just calling this method to check that i am actually connected to the database 
+            if (ConnectToDatabase())
+            {
+                // if the connection is connected the i will change the check box and its lebal in to green
+                connectionStatusLbl.Foreground = Brushes.Green;
+                connStatusChkBox.Background = Brushes.Green;
+                connStatusChkBox.Content = "ONLINE";
+                connStatusChkBox.Foreground = Brushes.Green;
+            }
+            else
+            {
+                // other wise I will keep it red 
+                connectionStatusLbl.Foreground = Brushes.Red;
+                connStatusChkBox.Content = "OFFLINE";
+                connStatusChkBox.Background = Brushes.Red;
+                connStatusChkBox.Foreground = Brushes.Red;
             }
         }
 
 
-        
+
+
 
 
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -78,7 +80,24 @@ namespace GroundTerminalApp
             // we will use this class to render between windows like to go to search query setting and so ion
         }
 
-      
 
-    }
+        // I need a class level field that store and connet the app to the database. we already have the connection string in config file 
+        // so this class will be a storage for the connection string  just easier to to use and access  the connection string from other classes or methods
+        public static class ServerConnector
+        {
+            // this method is to store the connection string from config file
+            private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["SoftwareQualityFinalProject"]?.ConnectionString;
+
+            // another  method to create and return a new SqlConnection when ever we need too 
+            public static SqlConnection GetConnection()
+            {
+                return new SqlConnection(ConnectionString);
+            }
+        }
+
+
+         
+
+
+}
 }
