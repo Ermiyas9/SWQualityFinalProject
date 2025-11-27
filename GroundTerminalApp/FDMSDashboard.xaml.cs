@@ -34,9 +34,6 @@ namespace GroundTerminalApp
 		private const int DefaultListenPort = 5000; // default port if it's not set in config
 		private int listenPort;
 
-		private List<double> altitudeHistory = new List<double>();
-		private const int MaxAltitudePoints = 50;
-
 		public FDMSDashboard()
         {
             InitializeComponent();
@@ -183,96 +180,6 @@ namespace GroundTerminalApp
 			return totalRead;
 		}
 
-		// updating the altitude chart with new altitude data
-		private void UpdateAltitudeChart(double altitude)
-		{
-			altitudeHistory.Add(altitude);
-
-			if (altitudeHistory.Count > MaxAltitudePoints)
-			{
-				altitudeHistory.RemoveAt(0);
-			}
-
-			AltitudeCanvas.Children.Clear();
-
-			// wait for more points
-			if (altitudeHistory.Count < 2)
-			{
-				return;
-			}
-
-			double width = AltitudeCanvas.ActualWidth;
-			double height = AltitudeCanvas.ActualHeight;
-
-			if (width <= 0 || height <= 0)
-			{
-				return;
-			}
-
-			double padding = 5.0;
-			double innerWidth = width - padding * 2;
-			double innerHeight = height - padding * 2;
-
-			double minAltitude = altitudeHistory.Min();
-			double maxAltitude = altitudeHistory.Max();
-
-			if (Math.Abs(maxAltitude - minAltitude) < 0.0001)
-			{
-				maxAltitude = minAltitude + 1.0;
-			}
-
-			Line xAxis = new Line();
-			xAxis.X1 = padding;
-			xAxis.Y1 = padding + innerHeight;
-			xAxis.X2 = padding + innerWidth;
-			xAxis.Y2 = padding + innerHeight;
-			xAxis.Stroke = Brushes.Gray;
-			xAxis.StrokeThickness = 1;
-			AltitudeCanvas.Children.Add(xAxis);
-
-			Line yAxis = new Line();
-			yAxis.X1 = padding;
-			yAxis.Y1 = padding;
-			yAxis.X2 = padding;
-			yAxis.Y2 = padding + innerHeight;
-			yAxis.Stroke = Brushes.Gray;
-			yAxis.StrokeThickness = 1;
-			AltitudeCanvas.Children.Add(yAxis);
-
-			Polyline line = new Polyline();
-			line.Stroke = Brushes.Lime;
-			line.StrokeThickness = 1.5;
-
-			int count = altitudeHistory.Count;
-			double xStep = innerWidth / (MaxAltitudePoints - 1);
-
-			for (int i = 0; i < count; i++)
-			{
-				double x = padding + xStep * i;
-
-				double value = altitudeHistory[i];
-				double normalized = (value - minAltitude) / (maxAltitude - minAltitude);
-				double y = padding + innerHeight - normalized * innerHeight;
-
-				Point p = new Point(x, y);
-				line.Points.Add(p);
-
-				Ellipse dot = new Ellipse();
-				dot.Width = 4;
-				dot.Height = 4;
-				dot.Fill = Brushes.Lime;
-
-				Canvas.SetLeft(dot, p.X - dot.Width / 2);
-				Canvas.SetTop(dot, p.Y - dot.Height / 2);
-
-				AltitudeCanvas.Children.Add(dot);
-			}
-
-			// adding the line to the canvas
-			AltitudeCanvas.Children.Add(line);
-		}
-
-
 		// updating the dashboard UI (packet counter section) from the packet counter
 		private void UpdateDashboardFromCounter()
 		{
@@ -280,35 +187,57 @@ namespace GroundTerminalApp
 			int receivedCount = packetCounter.Received;
 			int sentCount = packetCounter.Sent;
 
-			// Update labels (we don't have sent count in here yet)
-			LblReceived.Content = $"Received: {receivedCount}";
-			LblSent.Content = $"Sent: {sentCount}";
+            // i added the dropped or corrupt packate field so
+            int droppedCount = packetCounter.Dropped;
 
+<<<<<<< HEAD
+            // Update labels (we don't have sent count in here yet)----- I have added the labels  thank u
+            PcktRecievedLbl.Content = $"Received: {receivedCount}";
+            LblSent.Content = $"Sent: {sentCount}";
+            LblDropped.Content = $"Dropped: {droppedCount}";
+=======
 			if (telemetry != null)
 			{
 				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
 				LblTailNumber.Content = $"Tail number: {telemetry.TailNumber}";
 				LblLastUpdate.Content = $"Last update: {telemetry.Timestamp:yyyy-MM-dd HH:mm:ss}";
+>>>>>>> ae82281df95b0b75754a94602597c2ee8a42de85
 
-				UpdateAltitudeChart(telemetry.Altitude);
+            // Update packet health
+            if (telemetry != null)
+            {
+                packageHealthLbl.Content = "Packet Health: VALID";
+                packageHealthLbl.Foreground = Brushes.LightGreen;
+            }
+            else
+            {
+                packageHealthLbl.Content = "Packet Health:  PACKET";
+                packageHealthLbl.Foreground = Brushes.Red;
+            }
 
-				LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
-				LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+            // Update telemetry values
+            if (telemetry != null)
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
 
-				LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
-				LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
-				LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
-			}
-			else
-			{
-				this.Title = $"FDMS Dashboard - Received: {receivedCount}";
-			}
-		}
+                LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
+                LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
+                LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+
+                LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
+                LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
+                LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
+            }
+            else
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount}";
+            }
+        }
 
 
 
-		// we need a base class for the dash board components here and with one render method
-		public class DashBoardComponents
+        // we need a base class for the dash board components here and with one render method
+        public class DashBoardComponents
         {
 
 
@@ -351,6 +280,9 @@ namespace GroundTerminalApp
         {
             private int received;
             private int sent;
+
+            // this field i am going to use it to track the status of dropped packets
+            private int dropped;
             private TelemetryData lastTelemetry;
             private readonly object lockObject = new object();
 
@@ -388,6 +320,28 @@ namespace GroundTerminalApp
             }
 
             /*
+                Property: Dropped
+                Description: Gets/sets number of invalid or corrupted packets
+            */
+            public int Dropped
+            {
+                get
+                {
+                    lock (lockObject)
+                    {
+                        return dropped;
+                    }
+                }
+                set
+                {
+                    lock (lockObject)
+                    {
+                        dropped = value;
+                    }
+                }
+            }
+
+            /*
             Property: LastTelemetry
             Description: Gets the most recently received and validated telemetry packet
             Returns: TelemetryData object or null if no packets received yet
@@ -403,6 +357,9 @@ namespace GroundTerminalApp
                 }
             }
 
+
+
+
             /*
             Method: TheCounterComponent() [Constructor]
             Description: Initializes packet counters and telemetry storage
@@ -411,6 +368,8 @@ namespace GroundTerminalApp
             {
                 received = 0;
                 sent = 0;
+                // i added this to check the status of the dropped packets 
+                dropped = 0; 
                 lastTelemetry = null;
             }
 
@@ -504,6 +463,11 @@ namespace GroundTerminalApp
                     // Verify checksum - packet is corrupted if mismatch
                     if (receivedChecksum != calculatedChecksum)
                     {
+                        lock (lockObject)
+                        {
+                            // so increment dropped counter here
+                            dropped++;   
+                        }
                         Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
                         return false;
                     }
@@ -526,6 +490,11 @@ namespace GroundTerminalApp
                 }
                 catch (Exception ex)
                 {
+                    lock (lockObject)
+                    {
+                        // increment dropped counter on parse error
+                        dropped++;  
+                    }
                     Console.WriteLine($"Error parsing packet: {ex.Message}");
                     return false;
                 }
