@@ -65,6 +65,9 @@
     <Compile Include="SettingPageForTheEntireApp.xaml.cs">
       <DependentUpon>SettingPageForTheEntireApp.xaml</DependentUpon>
     </Compile>
+    <Compile Include="usersLoginPage.xaml.cs">
+      <DependentUpon>usersLoginPage.xaml</DependentUpon>
+    </Compile>
     <Page Include="FDMSDashboard.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -93,6 +96,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SettingPageForTheEntireApp.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="usersLoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

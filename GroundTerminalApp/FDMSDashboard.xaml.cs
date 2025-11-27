@@ -187,32 +187,49 @@ namespace GroundTerminalApp
 			int receivedCount = packetCounter.Received;
 			int sentCount = packetCounter.Sent;
 
-			// Update labels (we don't have sent count in here yet)
-			LblReceived.Content = $"Received: {receivedCount}";
-			LblSent.Content = $"Sent: {sentCount}";
+            // i added the dropped or corrupt packate field so
+            int droppedCount = packetCounter.Dropped;
 
-			if (telemetry != null)
-			{
-				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+            // Update labels (we don't have sent count in here yet)----- I have added the labels  thank u
+            PcktRecievedLbl.Content = $"Received: {receivedCount}";
+            LblSent.Content = $"Sent: {sentCount}";
+            LblDropped.Content = $"Dropped: {droppedCount}";
 
-				LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
-				LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
-				LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+            // Update packet health
+            if (telemetry != null)
+            {
+                packageHealthLbl.Content = "Packet Health: VALID";
+                packageHealthLbl.Foreground = Brushes.LightGreen;
+            }
+            else
+            {
+                packageHealthLbl.Content = "Packet Health:  PACKET";
+                packageHealthLbl.Foreground = Brushes.Red;
+            }
 
-				LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
-				LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
-				LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
-			}
-			else
-			{
-				this.Title = $"FDMS Dashboard - Received: {receivedCount}";
-			}
-		}
+            // Update telemetry values
+            if (telemetry != null)
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+
+                LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
+                LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
+                LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+
+                LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
+                LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
+                LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
+            }
+            else
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount}";
+            }
+        }
 
 
 
-		// we need a base class for the dash board components here and with one render method
-		public class DashBoardComponents
+        // we need a base class for the dash board components here and with one render method
+        public class DashBoardComponents
         {
 
 
@@ -255,6 +272,9 @@ namespace GroundTerminalApp
         {
             private int received;
             private int sent;
+
+            // this field i am going to use it to track the status of dropped packets
+            private int dropped;
             private TelemetryData lastTelemetry;
             private readonly object lockObject = new object();
 
@@ -292,6 +312,28 @@ namespace GroundTerminalApp
             }
 
             /*
+                Property: Dropped
+                Description: Gets/sets number of invalid or corrupted packets
+            */
+            public int Dropped
+            {
+                get
+                {
+                    lock (lockObject)
+                    {
+                        return dropped;
+                    }
+                }
+                set
+                {
+                    lock (lockObject)
+                    {
+                        dropped = value;
+                    }
+                }
+            }
+
+            /*
             Property: LastTelemetry
             Description: Gets the most recently received and validated telemetry packet
             Returns: TelemetryData object or null if no packets received yet
@@ -307,6 +349,9 @@ namespace GroundTerminalApp
                 }
             }
 
+
+
+
             /*
             Method: TheCounterComponent() [Constructor]
             Description: Initializes packet counters and telemetry storage
@@ -315,6 +360,8 @@ namespace GroundTerminalApp
             {
                 received = 0;
                 sent = 0;
+                // i added this to check the status of the dropped packets 
+                dropped = 0; 
                 lastTelemetry = null;
             }
 
@@ -408,6 +455,11 @@ namespace GroundTerminalApp
                     // Verify checksum - packet is corrupted if mismatch
                     if (receivedChecksum != calculatedChecksum)
                     {
+                        lock (lockObject)
+                        {
+                            // so increment dropped counter here
+                            dropped++;   
+                        }
                         Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
                         return false;
                     }
@@ -430,6 +482,11 @@ namespace GroundTerminalApp
                 }
                 catch (Exception ex)
                 {
+                    lock (lockObject)
+                    {
+                        // increment dropped counter on parse error
+                        dropped++;  
+                    }
                     Console.WriteLine($"Error parsing packet: {ex.Message}");
                     return false;
                 }
