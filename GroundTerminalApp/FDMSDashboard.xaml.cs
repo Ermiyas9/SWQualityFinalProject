@@ -25,9 +25,17 @@ namespace GroundTerminalApp
         public FDMSDashboard()
         {
             InitializeComponent();
+
+            // so I can call that I created in another window, since that method takes label check box and bool variable i will pass those 
+            var searchPage = new SearchingPageApp();
+            searchPage.UpdateConnectionStatus(connectionStatusLbl, connStatChkBx, true);
+
+
         }
 
-     
+
+
+
         // we need a base class for the dash board components here and with one render method
         public class DashBoardComponents
         {
@@ -94,6 +102,8 @@ namespace GroundTerminalApp
                 return new SqlConnection(ConnectionString);
             }
         }
+
+
 
 
          

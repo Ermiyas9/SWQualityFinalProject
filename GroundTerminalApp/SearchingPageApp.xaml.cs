@@ -26,25 +26,11 @@ namespace GroundTerminalApp
         public SearchingPageApp()
         {
             InitializeComponent();
-            IsConnected(); 
 
-            // so I am just calling this method to check that i am actually connected to the database 
-            if (ConnectToDatabase())
-            {
-                
-                connectionStatusLbl.Foreground = Brushes.Green;
-                connStatusChkBox.Background = Brushes.Green;
-                connStatusChkBox.Content = "ONLINE";
-                connStatusChkBox.Foreground = Brushes.Green; 
-            }
-            else
-            {
-              
-                connectionStatusLbl.Foreground = Brushes.Red;
-                connStatusChkBox.Content = "OFFLINE";
-                connStatusChkBox.Background = Brushes.Red;
-                connStatusChkBox.Foreground = Brushes.Red;
-            }
+            bool connected = ConnectToDatabase();
+
+            // pass the controls as parameters
+            UpdateConnectionStatus(connectionStatusLbl, connStatusChkBox, connected);
         }
 
         // i added this to store the database connection to a class level field 
@@ -95,31 +81,25 @@ namespace GroundTerminalApp
 
             
         }
-        public void IsConnected ()
+        public void UpdateConnectionStatus(Label statusLabel, CheckBox statusCheckBox, bool isConnected)
         {
-            // so I am just calling this method to check that i am actually connected to the database 
-            if (ConnectToDatabase())
+            if (isConnected)
             {
-                // if the connection is connected the i will change the check box and its lebal in to green
-                connectionStatusLbl.Foreground = Brushes.Green;
-                connStatusChkBox.Background = Brushes.Green;
-                connStatusChkBox.Content = "ONLINE";
-                connStatusChkBox.Foreground = Brushes.Green;
+                // if the connection is connected then change the check box and its label into green
+                statusLabel.Foreground = Brushes.Green;
+                statusCheckBox.Background = Brushes.Green;
+                statusCheckBox.Content = "ONLINE";
+                statusCheckBox.Foreground = Brushes.Green;
             }
             else
             {
-                // other wise I will keep it red 
-                connectionStatusLbl.Foreground = Brushes.Red;
-                connStatusChkBox.Content = "OFFLINE";
-                connStatusChkBox.Background = Brushes.Red;
-                connStatusChkBox.Foreground = Brushes.Red;
+                // otherwise keep it red
+                statusLabel.Foreground = Brushes.Red;
+                statusCheckBox.Content = "OFFLINE";
+                statusCheckBox.Background = Brushes.Red;
+                statusCheckBox.Foreground = Brushes.Red;
             }
         }
-
-
-
-
-
 
 
     }
