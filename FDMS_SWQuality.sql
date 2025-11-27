@@ -6,9 +6,26 @@
    DATE:   2025-11-25
    ============================================================ */
 
+
+-- Database for Software Quality Final Project 
+
+
+-- Create the database for the Fog Lamp Assembly project
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'FlightDataManagementSystem')
+BEGIN
+    CREATE DATABASE FlightDataManagementSystem;
+END
+GO
+
+-- Switch to the newly created database
+USE FlightDataManagementSystem;
+GO
+
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
+
+
 
 
 

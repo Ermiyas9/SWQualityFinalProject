@@ -105,7 +105,8 @@
             </Border>
         </StackPanel>
 
-        <Label Content="Connection Status"
+        <Label x:Name="connectionStatusLbl"
+               Content="Connection Status"
                Background="Green"
                Foreground="White"
                FontSize="20"
@@ -113,7 +114,8 @@
                Canvas.Left="915"
                Canvas.Top="524" />
 
-        <CheckBox Content="Remote Database"
+        <CheckBox x:Name="connStatChkBx"
+                  Content="Remote Database"
                   Foreground="White"
                   FontSize="20"
                   Canvas.Left="920"

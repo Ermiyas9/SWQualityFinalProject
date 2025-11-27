@@ -7,6 +7,20 @@
         mc:Ignorable="d"
         Title="logsPage" Height="450" Width="800">
     <Grid>
-        
+        <!-- place status controls at the bottom -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20">
+            <!-- this is the connection status at the bottom -->
+            <Label x:Name="connectionStatusLbl"
+                   Content="Connection Status"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="Red"
+                   Margin="0,0,20,0"/>
+            <CheckBox x:Name="connStatChkBx"
+                      Content="OFFLINE"
+                      Foreground="Red"
+                      Height="30"
+                      Width="120"/>
+        </StackPanel>
     </Grid>
 </Window>

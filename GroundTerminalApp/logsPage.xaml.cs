@@ -22,6 +22,10 @@ namespace GroundTerminalApp
         public logsPage()
         {
             InitializeComponent();
+
+            // so I can call that I created in another window, since that method takes label check box and bool variable i will pass those 
+            var searchPage = new SearchingPageApp();
+            searchPage.UpdateConnectionStatus(connectionStatusLbl, connStatChkBx, true);
         }
     }
 }

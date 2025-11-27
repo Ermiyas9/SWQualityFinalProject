@@ -47,9 +47,9 @@
         </Border>
 
         <!-- this is the connection status at the bottom -->
-        <Label Content="Connection Status" FontSize="22" FontWeight="Bold"
-               Foreground="LightGreen" Canvas.Left="30" Canvas.Top="531" HorizontalAlignment="Left" VerticalAlignment="Top" Height="53" Width="265"/>
-        <RadioButton Content="ONLINE" Foreground="LightGreen" Canvas.Left="151" Canvas.Top="612" Height="42" Width="144"/>
+        <Label x:Name="connectionStatusLbl" Content="Connection Status" FontSize="22" FontWeight="Bold"
+               Foreground="Red" Canvas.Left="30" Canvas.Top="531" HorizontalAlignment="Left" VerticalAlignment="Top" Height="53" Width="265"/>
+        <CheckBox x:Name="connStatusChkBox" Content="OFFLINE" Foreground="Red" Canvas.Left="151" Canvas.Top="574" Height="45" Width="154" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
     </Canvas>
 </Window>
