@@ -186,12 +186,21 @@ namespace GroundTerminalApp
 			if (telemetry != null)
 			{
 				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+
+				LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
+				LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
+				LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+
+				LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
+				LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
+				LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
 			}
 			else
 			{
 				this.Title = $"FDMS Dashboard - Received: {receivedCount}";
 			}
 		}
+
 
 
 		// we need a base class for the dash board components here and with one render method

@@ -74,18 +74,30 @@
         <!-- here it will be better if we display the visual display of the charts -->
         <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="100">
             <Border Background="#333" Width="250" Height="151" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- so if we display line chart here is nice -->
+				<StackPanel>
+					<Label Content="Altitude" Foreground="White" Margin="10,10,100,0" />
+					<Label x:Name="LblAltitudeValue" Content="Altitude: N/A" Foreground="White" Margin="10,0,10,0" />
+					<!-- so if we display line chart here is nice -->
+				</StackPanel>
             </Border>
 
             <Border Background="#333" Width="250" Height="154" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- Chart control here -->
+				<StackPanel>
+					<Label Content="Attitude" Foreground="White" Margin="10,10,10,0" />
+					<Label x:Name="LblPitchValue" Content="Pitch: N/A" Foreground="White" Margin="10,0,10,0" />
+					<Label x:Name="LblBankValue" Content="Bank: N/A" Foreground="White" Margin="10,0,10,0" />
+				    <!-- Chart control here -->
+				</StackPanel>
             </Border>
 
             <Border Background="#333" Width="250" Height="154" Margin="10">
-                <Label Content="Speed " Foreground="White" Margin="10,10,100,106" />
-                <!-- Chart control here -->
+				<StackPanel>
+					<Label Content="Acceleration" Foreground="White" Margin="10,10,10,0" />
+					<Label x:Name="LblAccelXValue" Content="Accel X: N/A" Foreground="White" Margin="10,0,10,0" />
+					<Label x:Name="LblAccelYValue" Content="Accel Y: N/A" Foreground="White" Margin="10,0,10,0" />
+					<Label x:Name="LblAccelZValue" Content="Accel Z: N/A" Foreground="White" Margin="10,0,10,0" />
+				<!-- Chart control here -->
+				</StackPanel>
             </Border>
         </StackPanel>
 
