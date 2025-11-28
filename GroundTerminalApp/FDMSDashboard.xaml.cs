@@ -190,18 +190,10 @@ namespace GroundTerminalApp
             // i added the dropped or corrupt packate field so
             int droppedCount = packetCounter.Dropped;
 
-<<<<<<< HEAD
             // Update labels (we don't have sent count in here yet)----- I have added the labels  thank u
             PcktRecievedLbl.Content = $"Received: {receivedCount}";
             LblSent.Content = $"Sent: {sentCount}";
             LblDropped.Content = $"Dropped: {droppedCount}";
-=======
-			if (telemetry != null)
-			{
-				this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
-				LblTailNumber.Content = $"Tail number: {telemetry.TailNumber}";
-				LblLastUpdate.Content = $"Last update: {telemetry.Timestamp:yyyy-MM-dd HH:mm:ss}";
->>>>>>> ae82281df95b0b75754a94602597c2ee8a42de85
 
             // Update packet health
             if (telemetry != null)

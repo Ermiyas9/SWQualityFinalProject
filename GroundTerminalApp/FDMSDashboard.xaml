@@ -84,21 +84,12 @@
             </Border>
 
             <Border Background="#333" Width="250" Height="154" Margin="10">
-<<<<<<< HEAD
                 <StackPanel>
                     <Label Content="Attitude" Foreground="White" Margin="10,10,10,0" />
                     <Label x:Name="LblPitchValue" Content="Pitch: N/A" Foreground="White" Margin="10,0,10,0" />
                     <Label x:Name="LblBankValue" Content="Bank: N/A" Foreground="White" Margin="10,0,10,0" />
                     <!-- Chart control here -->
                 </StackPanel>
-=======
-				<StackPanel>
-					<Label Content="Pitch and Bank" Foreground="White" Margin="10,10,10,0" />
-					<Label x:Name="LblPitchValue" Content="Pitch: N/A" Foreground="White" Margin="10,0,10,0" />
-					<Label x:Name="LblBankValue" Content="Bank: N/A" Foreground="White" Margin="10,0,10,0" />
-				    <!-- Chart control here -->
-				</StackPanel>
->>>>>>> ae82281df95b0b75754a94602597c2ee8a42de85
             </Border>
 
             <Border Background="#333" Width="250" Height="154" Margin="10">
@@ -115,7 +106,6 @@
         <!-- a stack panal for displaying the packet counter display -->
         <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="320" />
 
-<<<<<<< HEAD
         <StackPanel Canvas.Left="350" Canvas.Top="350">
             <!-- in the footer i added a package container that is to show a package what we recieved and 
                  sent also i am thinking to implement if we did recieved the healthu package or not -->
@@ -170,22 +160,6 @@
                            FontWeight="SemiBold"
                            Margin="5,2" />
                 </StackPanel>
-=======
-        <!-- Footer -->
-        <StackPanel Canvas.Left="320" Canvas.Top="450">
-            <!-- Border for Packet Counter section -->
-            <Border Background="#333" Height="180" Width="485">
-                <StackPanel Margin="10">
-                    <Label Content="Flight Status"
-                           Foreground="White"
-                           FontSize="16"
-                           FontWeight="Bold" />
-					<Label x:Name="LblReceived" Content="Received" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
-					<Label x:Name="LblSent" Content="Sent" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
-					<Label x:Name="LblTailNumber" Content="Tail number: N/A" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
-					<Label x:Name="LblLastUpdate" Content="Last update: N/A" Foreground="Green" Margin="5,0" FontFamily="pack://application:,,,/Fonts/#digital-7"/>
-				</StackPanel>
->>>>>>> ae82281df95b0b75754a94602597c2ee8a42de85
             </Border>
         </StackPanel>
 
