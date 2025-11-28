@@ -50,8 +50,8 @@ namespace GroundTerminalApp
         {
             InitializeComponent();
 
-            // call the chart display once the app starts 
-            lineChartSetupAndDisplay();
+            // call the chart display once the app starts to display our line chart 
+            LineChartSetupAndDisplay();
 
             // so I can call that I created in another window, since that method takes label 
             // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
@@ -65,10 +65,6 @@ namespace GroundTerminalApp
             // Initialize packet counter and start TCP server
             packetCounter = new TheCounterComponent();
             StartTcpServer();
-
-       
-
-
         }
 
         private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
@@ -100,6 +96,11 @@ namespace GroundTerminalApp
             int receivedCount = packetCounter.Received;
             int sentCount = packetCounter.Sent;
 
+            // I am adding more two variables to store the tail number , Checksum
+            tailNumberLbl.Content = $"Tail: {telemetry.TailNumber}";
+            checksumLbl.Content = $"Checksum: {telemetry.Checksum}";
+
+
             // i added the dropped or corrupt packate field so
             int droppedCount = packetCounter.Dropped;
 
@@ -115,9 +116,13 @@ namespace GroundTerminalApp
                 UpdateLineChart(telemetry);
 
                 // streamOnlineIcon update is handled separately in UpdatingTheStatusOfStream()
-                LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
-                LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
-                LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+                LblAltitudeValue.Content = $"{telemetry.Altitude:F0} ft";
+                LblPitchValue.Content = $" {telemetry.Pitch:F1}°";
+                LblBankValue.Content = $" {telemetry.Bank:F1}°";
+
+                // so i update the ui here for the checksum and the tailnumber 
+                tailNumberLbl.Content = $" {telemetry.TailNumber}";
+                checksumLbl.Content = $"{telemetry.Checksum}";
 
                 LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
                 LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
@@ -283,7 +288,7 @@ namespace GroundTerminalApp
             return totalRead;
         }
 
-        private void lineChartSetupAndDisplay()
+        private void LineChartSetupAndDisplay()
         {
             // add the chart area once 
             if (lineChartAlltVsTime.ChartAreas.Count == 0)
@@ -614,7 +619,8 @@ namespace GroundTerminalApp
                         Weight = double.Parse(weightText),
                         Altitude = double.Parse(altitudeText),
                         Pitch = double.Parse(pitchText),
-                        Bank = double.Parse(bankText)
+                        Bank = double.Parse(bankText),
+                        Checksum = receivedChecksum
                     };
 
                     return true;
@@ -699,6 +705,8 @@ namespace GroundTerminalApp
             public double Altitude { get; set; }        // Altitude above sea level (feet)
             public double Pitch { get; set; }           // Pitch angle (degrees)
             public double Bank { get; set; }            // Bank angle (degrees)
+            public int Checksum { get; set; }           // Packet checksum (validated) i am adding this cus i want to display the checksum on dashboard
+
         }
 
         public class SideBarComponents : DashBoardComponents

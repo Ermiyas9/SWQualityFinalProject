@@ -110,7 +110,7 @@
                            Margin="0,10"/>
                     <Label x:Name="LblPitchValue"
                          Content="N/A"
-                         FontSize="40"
+                         FontSize="50"
                          Foreground="Yellow"
                          HorizontalAlignment="Center"
                          Margin="0,15"/>
@@ -202,7 +202,7 @@
                     <Label x:Name="PcktRecievedLbl"
                            Content="Received: 0"
                            Foreground="LightGreen"
-                           FontSize="14"
+                           FontSize="20"
                            FontWeight="SemiBold"
                            Margin="5,2" />
 
@@ -210,7 +210,7 @@
                     <Label x:Name="LblSent"
                            Content="Sent: 0"
                            Foreground="LightBlue"
-                           FontSize="14"
+                           FontSize="20"
                            FontWeight="SemiBold"
                            Margin="5,2" />
 
@@ -218,17 +218,11 @@
                     <Label x:Name="LblDropped"
                            Content="Dropped: 0"
                            Foreground="Orange"
-                           FontSize="14"
+                           FontSize="20"
                            FontWeight="SemiBold"
                            Margin="5,2" />
 
                     <!-- Packet Health -->
-                    <Label x:Name="packageHealthLbl"
-                           Content="Packet Health: Unknown"
-                           Foreground="White"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="5,2" />
                 </StackPanel>
             </Border>
             <!-- in the footer i added a package container that is to show a package what we recieved and
@@ -343,9 +337,9 @@
 
         </Border>
         <Border Background="#333"
-            Width="235"
-            Height="210"
-            Canvas.Left="335" Canvas.Top="294" RenderTransformOrigin="3.828,3.059" HorizontalAlignment="Center" VerticalAlignment="Top">
+            Width="330"
+            Height="125"
+            Canvas.Left="265" Canvas.Top="374" RenderTransformOrigin="3.828,3.059" HorizontalAlignment="Center" VerticalAlignment="Top">
 
             <StackPanel>
                 <Label
@@ -357,7 +351,7 @@
                 <Label
                     x:Name="tailNumberLbl"
                     Foreground="Pink"
-                    FontSize="80" 
+                    FontSize="50" 
                     HorizontalAlignment="Center" Content="N/A"/>
             </StackPanel>
 
@@ -376,7 +370,7 @@
                       Margin="0,15"/>
                 <Label x:Name="LblBankValue"
                        Content="N/A"
-                       FontSize="40"
+                       FontSize="50"
                        Foreground="Blue"
                        HorizontalAlignment="Center" Height="76" Width="95"/>
 
