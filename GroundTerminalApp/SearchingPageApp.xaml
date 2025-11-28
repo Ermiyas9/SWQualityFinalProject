@@ -11,12 +11,12 @@
                Foreground="White" Canvas.Left="20" Canvas.Top="10"/>
 
         <!-- this section is for showing the index list we can select from also it will be populate based on the list count  -->
-        <Label Content="Search Index" FontSize="24" FontWeight="Bold"
-       Foreground="White" Canvas.Left="20" Canvas.Top="80"/>
+        <Label Content="Search Result" FontSize="24" FontWeight="Bold"
+               Foreground="White" Canvas.Left="35" Canvas.Top="91"/>
         <ListBox x:Name="SearchIndxListBox"
-         Canvas.Left="20" Canvas.Top="120" Width="290" Height="324"
-         Background="#333333" Foreground="White" FontSize="18"/>
-
+                 Canvas.Left="20" Canvas.Top="139" Width="290" Height="399"
+                 Background="#333333" Foreground="White" FontSize="18"
+                 HorizontalAlignment="Center" VerticalAlignment="Top"/>
 
         <!-- this is the result section where we show metrics and charts also we must collect a correct flight ID to pull out the information ..??-->
         <Label Content="Search by Flight ID" FontSize="24" FontWeight="Bold"
@@ -26,14 +26,16 @@
         <TextBox x:Name="SearchBox" Width="250" Height="30"
                  Canvas.Left="350" Canvas.Top="120"
                  Background="#333333" Foreground="White"
-                 FontSize="18" />
+                 FontSize="18"/>
         <Button x:Name="SearchButton" Content="Search" Width="100" Height="30"
                 Canvas.Left="610" Canvas.Top="120"
                 Background="LightBlue" Foreground="Black"
                 FontSize="18" Click="SearchButton_Click"/>
 
         <!-- this part is for showing bar graphs and I am thinking displaying line or pie chart here  -->
-        <Border Background="#333333" Canvas.Left="345" Canvas.Top="184" Width="800" Height="200" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Border Background="#333333" Canvas.Left="345" Canvas.Top="184"
+                Width="800" Height="200" CornerRadius="10"
+                HorizontalAlignment="Left" VerticalAlignment="Top">
             <StackPanel Margin="20">
                 <Label Content="Progreesss" Foreground="LightBlue"/>
                 <ProgressBar Value="70" Maximum="100" Height="20" Foreground="LightBlue"/>
@@ -45,53 +47,55 @@
         </Border>
 
         <!-- this is just a placeholder for pie chart we will replace later -->
-        <Border Background="#333333" Canvas.Left="750" Canvas.Top="384" Width="300" Height="300" CornerRadius="150">
-            <Label Content="Pie Chart" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border Background="#333333" Canvas.Left="345" Canvas.Top="399"
+                Width="300" Height="300" CornerRadius="150">
+            <Label Content="Pie Chart" Foreground="White"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
 
-
-        <!-- this is a connection status block and it is  toggleable symbol like when its online it shows  the online green mark when offline will show offline from icons8 webstie  -->
-        <Grid Canvas.Left="30" Canvas.Top="531" Width="265" Height="120">
+        <!-- this is a connection status block and it is toggleable symbol like when its online it shows the online green mark when offline will show offline from icons8 website -->
+        <Grid Canvas.Left="30" Canvas.Top="574" Width="265" Height="120"
+              HorizontalAlignment="Center" VerticalAlignment="Top">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <!-- Heading row -->
-                <RowDefinition Height="*" />
-                <!-- Symbol + status row -->
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!-- Heading -->
             <Label x:Name="connectionStatusHeading"
-           Content="Connection Status"
-           FontSize="22"
-           FontWeight="Bold"
-           Foreground="White"
-           Grid.Row="0"
-           HorizontalAlignment="Left"
-           VerticalAlignment="Center"/>
+                   Content="Connection Status"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   Grid.Row="0"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"/>
 
             <!-- Symbol + status text -->
             <StackPanel Orientation="Horizontal"
-                Grid.Row="1"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Margin="0,10,0,0">
+                        Grid.Row="1"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Margin="0,10,0,0">
+
                 <Image x:Name="onlineIcon"
-               Source="https://img.icons8.com/emoji/48/check-mark-button-emoji.png"
-               Width="48" Height="48"
-               Visibility="Collapsed"/>
+                       Source="https://img.icons8.com/emoji/48/check-mark-button-emoji.png"
+                       Width="48" Height="48"
+                       Visibility="Collapsed"/>
 
                 <Image x:Name="offlineIcon"
-               Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
-               Width="48" Height="48"
-               Visibility="Visible"/>
+                       Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+                       Width="48" Height="48"
+                       Visibility="Visible"/>
 
                 <Label x:Name="connectionStatusLbl"
-               Content="OFFLINE"
-               FontSize="18"
-               Foreground="Red"
-               VerticalAlignment="Center"
-               Margin="10,0,0,0"/>
+                       Content="OFFLINE"
+                       FontSize="18"
+                       Foreground="Red"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
             </StackPanel>
         </Grid>
+
     </Canvas>
 </Window>

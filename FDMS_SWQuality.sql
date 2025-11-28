@@ -145,6 +145,28 @@ CREATE TABLE dbo.TransmissionErrorLog
 );
 GO
 
+
+-- Drop the table if it already exists
+IF OBJECT_ID('dbo.AircraftTransmitterPackets', 'U') IS NOT NULL
+    DROP TABLE dbo.AircraftTransmitterPackets;
+GO
+
+-- Create the table to store the packet we will recieve from AircraftTransmit
+CREATE TABLE dbo.AircraftTransmitterPackets
+(
+    TelemetryId INT IDENTITY(1,1) PRIMARY KEY,          -- unique row ID
+    SampleTimeStamp DATETIME2(0) NOT NULL,              -- timestamp when sample was received
+    TailNumber NVARCHAR(50) NOT NULL,                   -- aircraft identifier
+    [Checksum] INT NOT NULL,                            -- packet checksum
+    Altitude FLOAT NOT NULL,                            -- altitude in feet
+    Pitch FLOAT NOT NULL,                               -- pitch angle in degrees
+    Bank FLOAT NOT NULL,                                -- bank angle in degrees
+    AccelX FLOAT NOT NULL,                              -- X-axis acceleration
+    AccelY FLOAT NOT NULL,                              -- Y-axis acceleration
+    AccelZ FLOAT NOT NULL                               -- Z-axis acceleration
+);
+GO
+
 /* ------------------------------------------------------------
    3. Seed data (Channels + sample Aircraft/Flight)
    ------------------------------------------------------------ */
@@ -238,3 +260,6 @@ SELECT * FROM dbo.Channel;
 SELECT * FROM dbo.TelemetrySample;
 SELECT * FROM dbo.TransmissionErrorLog;
 
+SELECT * FROM dbo.AircraftTransmitterPackets
+
+-- 

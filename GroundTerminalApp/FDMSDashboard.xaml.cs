@@ -13,19 +13,19 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+// for chart 
+using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using static GroundTerminalApp.FDMSDashboard;
-
-// for chart 
-using System.Windows.Forms.DataVisualization.Charting;
 using WFChart = System.Windows.Forms.DataVisualization.Charting.Chart;
 using WFChartArea = System.Windows.Forms.DataVisualization.Charting.ChartArea;
+using WFColor = System.Drawing.Color;
 using WFSeries = System.Windows.Forms.DataVisualization.Charting.Series;
 using WFSeriesChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType;
-using WFColor = System.Drawing.Color;
 
 
 
@@ -65,7 +65,18 @@ namespace GroundTerminalApp
             // Initialize packet counter and start TCP server
             packetCounter = new TheCounterComponent();
             StartTcpServer();
+
+
+
+            // Timer to check stream status every second posiible
+            streamStatusTimer = new DispatcherTimer();
+            streamStatusTimer.Interval = TimeSpan.FromSeconds(1);
+            streamStatusTimer.Tick += (s, e) => UpdatingTheStatusOfStream();
+            streamStatusTimer.Start();
         }
+
+        // a time class to track the stream online status with time so if its not send for a while we can apply that change to the UI
+        private DispatcherTimer streamStatusTimer;
 
         private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
         {
@@ -161,8 +172,58 @@ namespace GroundTerminalApp
                 streamOfflineIcon.Visibility = Visibility.Visible;
                 packetStreamStatusLbl.Foreground = Brushes.Red;
                 packetStreamStatusLbl.Content = "OFFLINE";
+
+                // Clear telemetry labels with with we do this when the server goes offline
+                LblAltitudeValue.Content = "NA";
+                LblPitchValue.Content = "NA";
+                LblBankValue.Content = "NA";
+                tailNumberLbl.Content = "NA";
+                checksumLbl.Content = "NA";
+                LblAccelXValue.Content = "NA";
+                LblAccelYValue.Content = "NA";
+                LblAccelZValue.Content = "NA";
+            }
+
+        }
+
+
+        // I am creating this Method to store the packets like pitch tail number and so on so this table will store those values into database table
+        private void SaveGroundTerminalPacketsToDB(TelemetryData telemetry)
+        {
+            try
+            {
+                using (SqlConnection conn = ServerConnector.GetConnection())
+                {
+                    conn.Open();
+
+                    string sql = @"
+                                    INSERT INTO dbo.AircraftTransmitterPackets
+                                    (SampleTimeStamp, TailNumber, [Checksum], Altitude, Pitch, Bank, AccelX, AccelY, AccelZ)
+                                    VALUES
+                                    (@SampleTimeStamp, @TailNumber, @Checksum, @Altitude, @Pitch, @Bank, @AccelX, @AccelY, @AccelZ)";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SampleTimeStamp", telemetry.Timestamp);
+                        cmd.Parameters.AddWithValue("@TailNumber", telemetry.TailNumber);
+                        cmd.Parameters.AddWithValue("@Checksum", telemetry.Checksum);
+                        cmd.Parameters.AddWithValue("@Altitude", telemetry.Altitude);
+                        cmd.Parameters.AddWithValue("@Pitch", telemetry.Pitch);
+                        cmd.Parameters.AddWithValue("@Bank", telemetry.Bank);
+                        cmd.Parameters.AddWithValue("@AccelX", telemetry.AccelX);
+                        cmd.Parameters.AddWithValue("@AccelY", telemetry.AccelY);
+                        cmd.Parameters.AddWithValue("@AccelZ", telemetry.AccelZ);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("DB insert failed (AircraftTransmitterPackets): " + ex.Message);
             }
         }
+
 
         // starting the tcp server
         private void StartTcpServer()
@@ -258,6 +319,13 @@ namespace GroundTerminalApp
                         bool ok = packetCounter.ProcessPacket(packetBuffer);
                         if (ok)
                         {
+                            // I am adding this block to insert into the table
+                            // what ever we recieve we will update to the dashboard the same time we will store to the db table
+                            TelemetryData telemetry = packetCounter.LastTelemetry;
+                            if (telemetry != null)
+                            {
+                                SaveGroundTerminalPacketsToDB(telemetry);
+                            }
                             Dispatcher.Invoke(UpdateDashboardFromCounter);
                         }
                     }
