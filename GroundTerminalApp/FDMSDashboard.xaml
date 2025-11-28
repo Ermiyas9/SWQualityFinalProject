@@ -76,21 +76,24 @@
         <!-- here it will be better if we display the visual display of the charts -->
         <StackPanel Orientation="Horizontal"
                     Canvas.Left="320"
-                    Canvas.Top="100">
+                    Canvas.Top="64" Height="250" Width="840" HorizontalAlignment="Left" VerticalAlignment="Center">
 
             <Border Background="#333"
-                    Width="250"
-                    Height="151"
+                    Width="245"
+                    Height="170"
                     Margin="10">
                 <StackPanel>
                     <Label Content="Altitude"
-                           Foreground="White"
-                           Margin="10,10,100,0" />
+                           Foreground="LightGray"
+                           HorizontalAlignment="Center" 
+                           FontSize="20"
+                           Margin="0,10"/>
                     <Label x:Name="LblAltitudeValue"
-                           Content="Altitude: N/A"
-                           Foreground="White"
-                           Margin="10,0,10,0" />
-                    <!-- so if we display line chart here is nice -->
+                           Content="N/A"
+                           Foreground="PeachPuff"
+                           FontSize="60" 
+                           HorizontalAlignment="Center"/>
+
                 </StackPanel>
             </Border>
 
@@ -99,41 +102,48 @@
                     Height="154"
                     Margin="10">
                 <StackPanel>
-                    <Label Content="Attitude"
-                           Foreground="White"
-                           Margin="10,10,10,0" />
+                    <Label x:Name="LblPitchValue111"
+                           Content="Pitch"
+                           Foreground="LightGray"
+                           HorizontalAlignment="Center" 
+                           FontSize="20"
+                           Margin="0,10"/>
                     <Label x:Name="LblPitchValue"
-                           Content="Pitch: N/A"
-                           Foreground="White"
-                           Margin="10,0,10,0" />
-                    <Label x:Name="LblBankValue"
-                           Content="Bank: N/A"
-                           Foreground="White"
-                           Margin="10,0,10,0" />
-                    <!-- Chart control here -->
+                         Content="N/A"
+                         FontSize="40"
+                         Foreground="Yellow"
+                         HorizontalAlignment="Center"
+                         Margin="0,15"/>
                 </StackPanel>
             </Border>
-
             <Border Background="#333"
-                    Width="250"
-                    Height="154"
-                    Margin="10">
-                <StackPanel>
+                    Width="280"
+                    Height="202"
+                    Margin="20"
+                    >
+                <StackPanel Margin="0,0,-5,-36">
                     <Label Content="Acceleration"
-                           Foreground="White"
-                           Margin="10,10,10,0" />
+                           Foreground="LightGray"
+                           HorizontalAlignment="Center" 
+                           FontSize="20"
+                           Margin="0,10"/>
                     <Label x:Name="LblAccelXValue"
                            Content="Accel X: N/A"
-                           Foreground="White"
+                           Foreground="Violet"
+                           FontSize="25"
                            Margin="10,0,10,0" />
                     <Label x:Name="LblAccelYValue"
                            Content="Accel Y: N/A"
-                           Foreground="White"
-                           Margin="10,0,10,0" />
+                           Foreground="MediumPurple"
+                           Margin="10,0,10,0" 
+                           FontWeight="Bold"
+                           FontSize="25"/>
                     <Label x:Name="LblAccelZValue"
                            Content="Accel Z: N/A"
-                           Foreground="White"
-                           Margin="10,0,10,0" />
+                           Foreground="Orange"
+                           FontSize="25"
+                           FontWeight="Bold"
+                           Margin="10,0,10,0" Height="35" />
                     <!-- Chart control here -->
                 </StackPanel>
             </Border>
@@ -160,15 +170,12 @@
                     Canvas.Top="320" />
 
         <StackPanel Canvas.Left="900"
-                    Canvas.Top="280">
-            <!-- in the footer i added a package container that is to show a package what we recieved and
-                 sent also i am thinking to implement if we did recieved the healthu package or not -->
-            <!-- the next oone is the border for Packet Counter section -->
+                    Canvas.Top="320">
             <Border Background="#222"
                     BorderBrush="White"
                     BorderThickness="1"
-                    Height="225"
-                    Width="255">
+                    Height="254"
+                    Width="270">
                 <Border.Clip>
                     <RectangleGeometry RadiusX="8"
                                        RadiusY="8"
@@ -224,6 +231,9 @@
                            Margin="5,2" />
                 </StackPanel>
             </Border>
+            <!-- in the footer i added a package container that is to show a package what we recieved and
+                 sent also i am thinking to implement if we did recieved the healthu package or not -->
+            <!-- the next oone is the border for Packet Counter section -->
         </StackPanel>
 
         <!-- this is a connection status block and it is toggleable symbol like when its online it shows
@@ -250,7 +260,6 @@
                        Content="Remote DB Connection"
                        FontSize="20"
                        Foreground="White"
-                       FontWeight="Bold"
                        HorizontalAlignment="Left" />
 
                 <!-- Icon + OFFLINE text side-by-side -->
@@ -286,7 +295,6 @@
                        Content="Packet Stream Connection"
                        FontSize="20"
                        Foreground="White"
-                       FontWeight="Bold"
                        HorizontalAlignment="Left" />
 
                 <!-- Icon + OFFLINE text side-by-side -->
@@ -312,5 +320,68 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
+        <Border Background="#333"
+            Width="340"
+            Height="105"
+            Canvas.Left="575" Canvas.Top="529" HorizontalAlignment="Center" VerticalAlignment="Top" RenderTransformOrigin="3.828,3.059">
+
+            <StackPanel>
+                <Label
+                    Foreground="LightGray"
+                    FontSize="20" 
+                    HorizontalAlignment="Center"
+                    Margin="0,10">
+                    Checksum
+                </Label>
+                <Label
+                      Foreground="YellowGreen"
+                      FontSize="40"
+                      Content="N/A"
+                      HorizontalAlignment="Center"
+                      x:Name="checksumLbl"/>
+            </StackPanel>
+
+        </Border>
+        <Border Background="#333"
+            Width="235"
+            Height="210"
+            Canvas.Left="335" Canvas.Top="294" RenderTransformOrigin="3.828,3.059" HorizontalAlignment="Center" VerticalAlignment="Top">
+
+            <StackPanel>
+                <Label
+                    Foreground="LightGray"
+                    HorizontalAlignment="Center" 
+                    FontSize="20"
+                    Margin="0,10"
+                    Content="Tail Number"/>
+                <Label
+                    x:Name="tailNumberLbl"
+                    Foreground="Pink"
+                    FontSize="80" 
+                    HorizontalAlignment="Center" Content="N/A"/>
+            </StackPanel>
+
+        </Border>
+        <Border Background="#333"
+            Width="225"
+            Height="135"
+            Canvas.Left="10" Canvas.Top="359" RenderTransformOrigin="3.828,3.059" HorizontalAlignment="Left" VerticalAlignment="Top">
+
+            <StackPanel>
+                <Label x:Name="LblPitchValue11"
+                      Content="Bank"
+                      FontSize="20"
+                      Foreground="lightGray"
+                      HorizontalAlignment="Center"
+                      Margin="0,15"/>
+                <Label x:Name="LblBankValue"
+                       Content="N/A"
+                       FontSize="40"
+                       Foreground="Blue"
+                       HorizontalAlignment="Center" Height="76" Width="95"/>
+
+            </StackPanel>
+
+        </Border>
     </Canvas>
 </Window>
