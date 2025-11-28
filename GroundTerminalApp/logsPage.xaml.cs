@@ -30,7 +30,7 @@ namespace GroundTerminalApp
             bool connected = searchPage.ConnectToDatabase();
 
             // pass the controls as parameters using the real connection state so it gets offline when its offline 
-            searchPage.UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
+            searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
         }
     }
 }

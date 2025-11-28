@@ -1,1 +1,123 @@
-﻿
+﻿<Window x:Class="GroundTerminalApp.UsersLoginPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FDMS Login"
+        Height="450"
+        Width="400"
+        Background="#1E1E2F"
+        FontFamily="Arial"
+        FontSize="16"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+
+    <Grid>
+        <Border Background="#2A2A40"
+                CornerRadius="12"
+                Padding="30"
+                Margin="30"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+
+            <!-- Use Grid to separate login form and DB status -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Login Form -->
+                <StackPanel Grid.Row="0">
+                    <!-- Title -->
+                    <TextBlock Text="FDMS Login"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Username -->
+                    <TextBlock Text="Username"
+                               Foreground="LightGray"
+                               Margin="0,0,0,5"/>
+                    <TextBox x:Name="TxtUsername"
+                             Height="35"
+                             Background="#444"
+                             Foreground="White"
+                             Padding="8"
+                             BorderBrush="#555"
+                             BorderThickness="1"
+                             Margin="0,0,0,15"/>
+
+                    <!-- Password -->
+                    <TextBlock Text="Password"
+                               Foreground="LightGray"
+                               Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="TxtPassword"
+                                 Height="35"
+                                 Background="#444"
+                                 Foreground="White"
+                                 Padding="8"
+                                 BorderBrush="#555"
+                                 BorderThickness="1"
+                                 Margin="0,0,0,25"/>
+
+                    <!-- Login Button -->
+                    <Button Content="Login"
+                            Height="40"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Click="BtnLogin_Click"/>
+
+                    <!-- Status Message -->
+                    <TextBlock x:Name="LoginStatusLbl"
+                               Text=""
+                               Foreground="Orange"
+                               FontWeight="SemiBold"
+                               Margin="0,15,0,0"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- DB Connection Status -->
+                <StackPanel Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="0,20,0,0">
+
+                    <!-- Title -->
+                    <Label x:Name="connForDBStatusTitle"
+                           Content="Remote DB Connection"
+                           FontSize="20"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center" />
+
+                    <!-- Icon + OFFLINE text -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,8,0,0">
+
+                        <Image x:Name="dbOnlineIcon"
+                               Source="https://img.icons8.com/tiny-color/16/online.png"
+                               Width="48"
+                               Height="48"
+                               Visibility="Collapsed" />
+
+                        <Image x:Name="dbOfflineIcon"
+                               Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+                               Width="48"
+                               Height="48"
+                               Visibility="Visible" />
+
+                        <Label x:Name="dbConnectionStatusLbl"
+                               Content="OFFLINE"
+                               FontSize="18"
+                               Foreground="Red"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

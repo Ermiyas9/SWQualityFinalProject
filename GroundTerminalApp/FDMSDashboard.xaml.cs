@@ -27,14 +27,14 @@ namespace GroundTerminalApp
     /// </summary>
     public partial class FDMSDashboard : Window
     {
-		// Tcp server components
-		private TcpListener tcpListener;
-		private CancellationTokenSource listenerCancellation;
-		private TheCounterComponent packetCounter;
-		private const int DefaultListenPort = 5000; // default port if it's not set in config
-		private int listenPort;
+        // Tcp server components
+        private TcpListener tcpListener;
+        private CancellationTokenSource listenerCancellation;
+        private TheCounterComponent packetCounter;
+        private const int DefaultListenPort = 5000; // default port if it's not set in config
+        private int listenPort;
 
-		public FDMSDashboard()
+        public FDMSDashboard()
         {
             InitializeComponent();
 
@@ -45,173 +45,161 @@ namespace GroundTerminalApp
             bool connected = searchPage.ConnectToDatabase();
 
             // pass the controls as parameters using the real connection state so it gets offline when its offline 
-            searchPage.UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
+            searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
 
 
 
 
-			// Initialize packet counter and start TCP server
-			packetCounter = new TheCounterComponent();
+            // Initialize packet counter and start TCP server
+            packetCounter = new TheCounterComponent();
             StartTcpServer();
 
-		}
+        }
 
-		// starting the tcp server
-		private void StartTcpServer()
-		{
-			listenerCancellation = new CancellationTokenSource();
+        // starting the tcp server
+        private void StartTcpServer()
+        {
+            listenerCancellation = new CancellationTokenSource();
 
-			string portText = ConfigurationManager.AppSettings["ServerPort"];
-			int port;
+            string portText = ConfigurationManager.AppSettings["ServerPort"];
+            int port;
 
-			if (!int.TryParse(portText, out port))
-			{
-				port = DefaultListenPort;
-			}
+            if (!int.TryParse(portText, out port))
+            {
+                port = DefaultListenPort;
+            }
 
-			listenPort = port;
+            listenPort = port;
 
-			tcpListener = new TcpListener(IPAddress.Any, listenPort);
-			tcpListener.Start();
+            tcpListener = new TcpListener(IPAddress.Any, listenPort);
+            tcpListener.Start();
 
-			Task acceptTask = AcceptClients(listenerCancellation.Token);
-		}
+            Task acceptTask = AcceptClients(listenerCancellation.Token);
+        }
 
-		// stopping the tcp server
-		private void StopTcpServer()
-		{
-			try
-			{
-				if (listenerCancellation != null)
-				{
-					listenerCancellation.Cancel();
-				}
+        // stopping the tcp server
+        private void StopTcpServer()
+        {
+            try
+            {
+                if (listenerCancellation != null)
+                {
+                    listenerCancellation.Cancel();
+                }
 
-				if (tcpListener != null)
-				{
-					tcpListener.Stop();
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Error stopping TCP server: " + ex.Message);
-			}
-		}
+                if (tcpListener != null)
+                {
+                    tcpListener.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error stopping TCP server: " + ex.Message);
+            }
+        }
 
-		// accepting clients
-		private async Task AcceptClients(CancellationToken token)
-		{
-			try
-			{
-				while (true)
-				{
-					TcpClient client = await tcpListener.AcceptTcpClientAsync();
-					Task clientTask = Task.Run(() => HandleClient(client, token));
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Error accepting client: " + ex.Message);
-			}
-		}
+        // accepting clients
+        private async Task AcceptClients(CancellationToken token)
+        {
+            try
+            {
+                while (true)
+                {
+                    TcpClient client = await tcpListener.AcceptTcpClientAsync();
+                    Task clientTask = Task.Run(() => HandleClient(client, token));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error accepting client: " + ex.Message);
+            }
+        }
 
 
-		// handling clients by reading packets and processing them
-		private async Task HandleClient(TcpClient client, CancellationToken token)
-		{
-			using (client)
-			{
-				NetworkStream stream = client.GetStream();
-				byte[] lengthBuffer = new byte[4];
+        // handling clients by reading packets and processing them
+        private async Task HandleClient(TcpClient client, CancellationToken token)
+        {
+            using (client)
+            {
+                NetworkStream stream = client.GetStream();
+                byte[] lengthBuffer = new byte[4];
 
-				try
-				{
-					while (true)
-					{
-						int lengthRead = await ReadFromStream(stream, lengthBuffer, 0, 4, token);
-						if (lengthRead != 4)
-						{
-							break;
-						}
+                try
+                {
+                    while (true)
+                    {
+                        int lengthRead = await ReadFromStream(stream, lengthBuffer, 0, 4, token);
+                        if (lengthRead != 4)
+                        {
+                            break;
+                        }
 
-						int packetLength = BitConverter.ToInt32(lengthBuffer, 0);
-						if (packetLength <= 0)
-						{
-							break;
-						}
+                        int packetLength = BitConverter.ToInt32(lengthBuffer, 0);
+                        if (packetLength <= 0)
+                        {
+                            break;
+                        }
 
-						byte[] packetBuffer = new byte[packetLength];
-						int packetRead = await ReadFromStream(stream, packetBuffer, 0, packetLength, token);
-						if (packetRead != packetLength)
-						{
-							break;
-						}
+                        byte[] packetBuffer = new byte[packetLength];
+                        int packetRead = await ReadFromStream(stream, packetBuffer, 0, packetLength, token);
+                        if (packetRead != packetLength)
+                        {
+                            break;
+                        }
 
-						bool ok = packetCounter.ProcessPacket(packetBuffer);
-						if (ok)
-						{
-							Dispatcher.Invoke(UpdateDashboardFromCounter);
-						}
-					}
-				}
-				catch (Exception)
-				{
-				}
-			}
-		}
+                        bool ok = packetCounter.ProcessPacket(packetBuffer);
+                        if (ok)
+                        {
+                            Dispatcher.Invoke(UpdateDashboardFromCounter);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
 
-		// reading exact number of bytes from the network stream
-		private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
-		{
-			int totalRead = 0;
+        // reading exact number of bytes from the network stream
+        private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            int totalRead = 0;
 
-			while (totalRead < count)
-			{
-				int read = await stream.ReadAsync(buffer, offset + totalRead, count - totalRead, token);
+            while (totalRead < count)
+            {
+                int read = await stream.ReadAsync(buffer, offset + totalRead, count - totalRead, token);
 
-				if (read <= 0)
-				{
-					break;
-				}
+                if (read <= 0)
+                {
+                    break;
+                }
 
-				totalRead += read;
-			}
+                totalRead += read;
+            }
 
-			return totalRead;
-		}
+            return totalRead;
+        }
 
-		// updating the dashboard UI (packet counter section) from the packet counter
-		private void UpdateDashboardFromCounter()
-		{
-			TelemetryData telemetry = packetCounter.LastTelemetry;
-			int receivedCount = packetCounter.Received;
-			int sentCount = packetCounter.Sent;
+        // updating the dashboard UI (packet counter section) from the packet counter
+        private void UpdateDashboardFromCounter()
+        {
+            TelemetryData telemetry = packetCounter.LastTelemetry;
+            int receivedCount = packetCounter.Received;
+            int sentCount = packetCounter.Sent;
 
             // i added the dropped or corrupt packate field so
             int droppedCount = packetCounter.Dropped;
 
-            // Update labels (we don't have sent count in here yet)----- I have added the labels  thank u
+            // Update labels (we don't have sent count in here yet)----- I have added the labels thank u
             PcktRecievedLbl.Content = $"Received: {receivedCount}";
             LblSent.Content = $"Sent: {sentCount}";
             LblDropped.Content = $"Dropped: {droppedCount}";
 
-            // Update packet health
-            if (telemetry != null)
-            {
-                packageHealthLbl.Content = "Packet Health: VALID";
-                packageHealthLbl.Foreground = Brushes.LightGreen;
-            }
-            else
-            {
-                packageHealthLbl.Content = "Packet Health:  PACKET";
-                packageHealthLbl.Foreground = Brushes.Red;
-            }
-
-            // Update telemetry values
             if (telemetry != null)
             {
                 this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
 
+                // streamOnlineIcon update is handled separately in UpdatingTheStatusOfStream()
                 LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
                 LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
                 LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
@@ -224,7 +212,38 @@ namespace GroundTerminalApp
             {
                 this.Title = $"FDMS Dashboard - Received: {receivedCount}";
             }
+
+            // update the stream status icon and label
+            UpdatingTheStatusOfStream();
         }
+
+        private void UpdatingTheStatusOfStream()
+        {
+            bool streamOnline = false;
+
+            // by using the LastUpdateOfStream i will know the status of the stream if is online or not 
+            if (packetCounter.LastUpdateOfStream != DateTime.MinValue)
+            {
+                streamOnline = (DateTime.UtcNow - packetCounter.LastUpdateOfStream).TotalSeconds <= 5;
+            }
+
+            // the in this condition i can display or hide the online status 
+            if (streamOnline)
+            {
+                streamOnlineIcon.Visibility = Visibility.Visible;
+                streamOfflineIcon.Visibility = Visibility.Collapsed;
+                packetStreamStatusLbl.Foreground = Brushes.Green;
+                packetStreamStatusLbl.Content = "ONLINE";
+            }
+            else
+            {
+                streamOnlineIcon.Visibility = Visibility.Collapsed;
+                streamOfflineIcon.Visibility = Visibility.Visible;
+                packetStreamStatusLbl.Foreground = Brushes.Red;
+                packetStreamStatusLbl.Content = "OFFLINE";
+            }
+        }
+
 
 
 
@@ -276,6 +295,10 @@ namespace GroundTerminalApp
             // this field i am going to use it to track the status of dropped packets
             private int dropped;
             private TelemetryData lastTelemetry;
+
+            // I am adding this to keep track of the time stamp for online and offline status 
+            public DateTime LastUpdateOfStream { get; private set; }
+
             private readonly object lockObject = new object();
 
             /*
@@ -361,7 +384,7 @@ namespace GroundTerminalApp
                 received = 0;
                 sent = 0;
                 // i added this to check the status of the dropped packets 
-                dropped = 0; 
+                dropped = 0;
                 lastTelemetry = null;
             }
 
@@ -386,6 +409,12 @@ namespace GroundTerminalApp
                         {
                             lastTelemetry = telemetry;
                             received++;
+
+                            // here I update the time stamp here 
+                            LastUpdateOfStream = DateTime.UtcNow;
+
+
+
                         }
                         return true;
                     }
@@ -458,7 +487,7 @@ namespace GroundTerminalApp
                         lock (lockObject)
                         {
                             // so increment dropped counter here
-                            dropped++;   
+                            dropped++;
                         }
                         Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
                         return false;
@@ -485,7 +514,7 @@ namespace GroundTerminalApp
                     lock (lockObject)
                     {
                         // increment dropped counter on parse error
-                        dropped++;  
+                        dropped++;
                     }
                     Console.WriteLine($"Error parsing packet: {ex.Message}");
                     return false;
@@ -582,18 +611,26 @@ namespace GroundTerminalApp
             }
         }
 
-		private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
-		{
+        private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
+        {
             SearchingPageApp searchPage = new SearchingPageApp();
             searchPage.Owner = this;
             searchPage.Show();
-		}
+        }
 
-		private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
-		{
+        private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
+        {
             logsPage logsPage = new logsPage();
             logsPage.Owner = this;
             logsPage.Show();
-		}
-	}
+        }
+
+        private void BtnLoginPage_Click(object sender, RoutedEventArgs e)
+        {
+            UsersLoginPage loginPage = new UsersLoginPage();
+            loginPage.Owner = this;
+            loginPage.Show();
+        }
+
+    }
 }

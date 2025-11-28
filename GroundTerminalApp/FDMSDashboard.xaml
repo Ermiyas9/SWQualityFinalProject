@@ -19,7 +19,7 @@
                        Height="76" />
 
             <!-- this are buttons where we can navigates to other windows -->
-            <Button x:Name="BtnSearchAndQuery" 
+            <Button x:Name="BtnSearchAndQuery"
                     Content="Search &amp; Query"
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
@@ -31,7 +31,7 @@
                     Height="76"
                     Click="BtnSearchAndQuery_Click" />
 
-            <Button x:Name="BtnSystemLogs" 
+            <Button x:Name="BtnSystemLogs"
                     Content="System Logs"
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
@@ -43,7 +43,8 @@
                     Height="76"
                     Click="BtnSystemLogs_Click" />
 
-            <Button Content="User"
+            <Button x:Name="BtnLoginPage"
+                    Content="User Login"
                     HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
                     FontSize="20"
@@ -51,7 +52,8 @@
                     Background="#333333"
                     Foreground="White"
                     Width="290"
-                    Height="76" />
+                    Height="76" 
+                    Click="BtnLoginPage_Click" />
 
             <Button Content="Settings"
                     HorizontalAlignment="Left"
@@ -74,58 +76,121 @@
 
         <!-- Main Content -->
         <!-- here it will be better if we display the visual display of the charts -->
-        <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="100">
-            <Border Background="#333" Width="250" Height="151" Margin="10">
+        <StackPanel Orientation="Horizontal"
+                    Canvas.Left="320"
+                    Canvas.Top="100">
+
+            <Border Background="#333"
+                    Width="250"
+                    Height="151"
+                    Margin="10">
+
                 <StackPanel>
-                    <Label Content="Altitude" Foreground="White" Margin="10,10,100,0" />
-                    <Label x:Name="LblAltitudeValue" Content="Altitude: N/A" Foreground="White" Margin="10,0,10,0" />
+                    <Label Content="Altitude"
+                           Foreground="White"
+                           Margin="10,10,100,0" />
+
+                    <Label x:Name="LblAltitudeValue"
+                           Content="Altitude: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
                     <!-- so if we display line chart here is nice -->
                 </StackPanel>
             </Border>
 
-            <Border Background="#333" Width="250" Height="154" Margin="10">
+            <Border Background="#333"
+                    Width="250"
+                    Height="154"
+                    Margin="10">
+
                 <StackPanel>
-                    <Label Content="Attitude" Foreground="White" Margin="10,10,10,0" />
-                    <Label x:Name="LblPitchValue" Content="Pitch: N/A" Foreground="White" Margin="10,0,10,0" />
-                    <Label x:Name="LblBankValue" Content="Bank: N/A" Foreground="White" Margin="10,0,10,0" />
+                    <Label Content="Attitude"
+                           Foreground="White"
+                           Margin="10,10,10,0" />
+
+                    <Label x:Name="LblPitchValue"
+                           Content="Pitch: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
+
+                    <Label x:Name="LblBankValue"
+                           Content="Bank: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
                     <!-- Chart control here -->
                 </StackPanel>
             </Border>
 
-            <Border Background="#333" Width="250" Height="154" Margin="10">
+            <Border Background="#333"
+                    Width="250"
+                    Height="154"
+                    Margin="10">
+
                 <StackPanel>
-                    <Label Content="Acceleration" Foreground="White" Margin="10,10,10,0" />
-                    <Label x:Name="LblAccelXValue" Content="Accel X: N/A" Foreground="White" Margin="10,0,10,0" />
-                    <Label x:Name="LblAccelYValue" Content="Accel Y: N/A" Foreground="White" Margin="10,0,10,0" />
-                    <Label x:Name="LblAccelZValue" Content="Accel Z: N/A" Foreground="White" Margin="10,0,10,0" />
+                    <Label Content="Acceleration"
+                           Foreground="White"
+                           Margin="10,10,10,0" />
+
+                    <Label x:Name="LblAccelXValue"
+                           Content="Accel X: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
+
+                    <Label x:Name="LblAccelYValue"
+                           Content="Accel Y: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
+
+                    <Label x:Name="LblAccelZValue"
+                           Content="Accel Z: N/A"
+                           Foreground="White"
+                           Margin="10,0,10,0" />
                     <!-- Chart control here -->
                 </StackPanel>
             </Border>
+
         </StackPanel>
 
         <!-- a stack panal for displaying the packet counter display -->
-        <StackPanel Orientation="Horizontal" Canvas.Left="320" Canvas.Top="320" />
+        <StackPanel Orientation="Horizontal"
+                    Canvas.Left="320"
+                    Canvas.Top="320" />
 
-        <StackPanel Canvas.Left="350" Canvas.Top="350">
-            <!-- in the footer i added a package container that is to show a package what we recieved and 
+        <StackPanel Canvas.Left="900"
+                    Canvas.Top="400">
+
+            <!-- in the footer i added a package container that is to show a package what we recieved and
                  sent also i am thinking to implement if we did recieved the healthu package or not -->
             <!-- the next oone is the border for Packet Counter section -->
-            <Border Background="#222" BorderBrush="White" BorderThickness="1" Height="229" Width="250">
+            <Border Background="#222"
+                    BorderBrush="White"
+                    BorderThickness="1"
+                    Height="229"
+                    Width="250">
+
                 <Border.Clip>
-                    <RectangleGeometry RadiusX="8" RadiusY="8" Rect="0,0,250,229"/>
+                    <RectangleGeometry RadiusX="8"
+                                       RadiusY="8"
+                                       Rect="0,0,250,229" />
                 </Border.Clip>
+
                 <StackPanel Margin="15">
+
                     <!-- Section Title -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,10">
+
                         <Image Source="https://img.icons8.com/arcade/64/counter.png"
                                Width="50"
                                Height="50"
-                               Margin="10"/>
+                               Margin="10" />
+
                         <TextBlock Text="Packet Counter"
                                    Foreground="LightSkyBlue"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" />
                     </StackPanel>
 
                     <!-- Received -->
@@ -159,45 +224,107 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="5,2" />
+
                 </StackPanel>
             </Border>
         </StackPanel>
 
-        <!-- this is a connection status block and it is  toggleable symbol like when its online it shows  
+        <!-- this is a connection status block and it is toggleable symbol like when its online it shows
              the online green mark when offline will show offline from icons8 webstie  -->
-        <Grid Canvas.Left="30" Canvas.Top="509" Width="245" Height="142">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <!-- Heading row -->
-                <RowDefinition Height="*" />
-                <!-- Symbol + status row -->
-            </Grid.RowDefinitions>
+        <Grid Canvas.Left="0"
+              Canvas.Top="450"
+              Width="530"
+              Height="232">
 
-            <!-- Symbol + status text -->
-            <StackPanel Orientation="Horizontal"
-                        Grid.Row="1"
-                        HorizontalAlignment="Left"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <!-- Left: DB -->
+                <ColumnDefinition Width="*" />
+                <!-- Right: Stream -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Remote Database Connection block -->
+            <StackPanel Grid.Column="0"
+                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Margin="0,10,0,0">
-                <Image x:Name="onlineIcon"
-                       Source="https://img.icons8.com/emoji/48/check-mark-button-emoji.png"
-                       Width="48"
-                       Height="48"
-                       Visibility="Collapsed"/>
 
-                <Image x:Name="offlineIcon"
-                       Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
-                       Width="48"
-                       Height="48"
-                       Visibility="Visible"/>
+                <!-- Title on top -->
+                <Label x:Name="connForDBStatusTitle"
+                       Content="Remote DB Connection"
+                       FontSize="20"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Left" />
 
-                <Label x:Name="connectionStatusLbl"
-                       Content="OFFLINE"
-                       FontSize="18"
-                       Foreground="Red"
-                       VerticalAlignment="Center"
-                       Margin="10,0,0,0"/>
+                <!-- Icon + OFFLINE text side-by-side -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,8,0,0">
+
+                    <Image x:Name="dbOnlineIcon"
+                           Source="https://img.icons8.com/tiny-color/16/online.png"
+                           Width="48"
+                           Height="48"
+                           Visibility="Collapsed" />
+
+                    <Image x:Name="dbOfflineIcon"
+                           Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+                           Width="48"
+                           Height="48"
+                           Visibility="Visible" />
+
+                    <Label x:Name="dbConnectionStatusLbl"
+                           Content="OFFLINE"
+                           FontSize="18"
+                           Foreground="Red"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0" />
+
+                </StackPanel>
             </StackPanel>
+
+            <!-- Packet Stream block -->
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="0,10,0,0">
+
+                <!-- Title on top -->
+                <Label x:Name="connForStreamStatusTitle"
+                       Content="Packet Stream Connection"
+                       FontSize="20"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Left" />
+
+                <!-- Icon + OFFLINE text side-by-side -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,8,0,0">
+
+                    <Image x:Name="streamOnlineIcon"
+                           Source="https://img.icons8.com/tiny-color/16/online.png"
+                           Width="48"
+                           Height="48"
+                           Visibility="Collapsed" />
+
+                    <Image x:Name="streamOfflineIcon"
+                           Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+                           Width="48"
+                           Height="48"
+                           Visibility="Visible" />
+
+                    <Label x:Name="packetStreamStatusLbl"
+                           Content="OFFLINE"
+                           FontSize="18"
+                           Foreground="Red"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0" />
+
+                </StackPanel>
+            </StackPanel>
+
         </Grid>
 
     </Canvas>

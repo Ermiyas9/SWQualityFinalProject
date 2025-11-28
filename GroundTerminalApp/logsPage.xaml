@@ -21,10 +21,14 @@
                        Height="76"
                        VerticalAlignment="Center"/>
 
-            <Button Content="Search &amp; Query" Height="76" FontSize="20" FontWeight="Bold" Background="#333333" Foreground="White"  HorizontalContentAlignment="Left"/>
-            <Button Content="System Logs" Height="76" FontSize="20" FontWeight="Bold" Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
-            <Button Content="User"  Height="76" FontSize="20" FontWeight="Bold" Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
-            <Button Content="Settings"  Height="76" FontSize="20" FontWeight="Bold" Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
+            <Button Content="Search &amp; Query" Height="76" FontSize="20" FontWeight="Bold"
+                    Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
+            <Button Content="System Logs" Height="76" FontSize="20" FontWeight="Bold"
+                    Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
+            <Button Content="User"  Height="76" FontSize="20" FontWeight="Bold"
+                    Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
+            <Button Content="Settings"  Height="76" FontSize="20" FontWeight="Bold"
+                    Background="#333333" Foreground="White" HorizontalContentAlignment="Left"/>
         </StackPanel>
 
         <!-- Main Content -->
@@ -102,6 +106,45 @@
             </Border>
         </Grid>
 
+        <!-- Remote Database Connection block -->
+        <StackPanel Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,10,0,10">
+
+            <!-- Title on top -->
+            <Label x:Name="connForDBStatusTitle"
+                   Content="Remote DB Connection"
+                   FontSize="18"
+                   Foreground="Red"
+                   HorizontalAlignment="Center" />
+
+            <!-- Icon + OFFLINE text side-by-side -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,8,0,0">
+
+                <Image x:Name="dbOnlineIcon"
+                       Source="https://img.icons8.com/tiny-color/16/online.png"
+                       Width="48"
+                       Height="48"
+                       Visibility="Collapsed" />
+
+                <Image x:Name="dbOfflineIcon"
+                       Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
+                       Width="48"
+                       Height="48"
+                       Visibility="Visible" />
+
+                <Label x:Name="dbConnectionStatusLbl"
+                       Content="OFFLINE"
+                       FontSize="18"
+                       Foreground="Red"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0" />
+            </StackPanel>
+        </StackPanel>
+
     </Grid>
-    
+
 </Window>
