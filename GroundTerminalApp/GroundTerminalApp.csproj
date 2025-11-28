@@ -62,9 +62,6 @@
     <Compile Include="SearchingPageApp.xaml.cs">
       <DependentUpon>SearchingPageApp.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SettingPageForTheEntireApp.xaml.cs">
-      <DependentUpon>SettingPageForTheEntireApp.xaml</DependentUpon>
-    </Compile>
     <Compile Include="usersLoginPage.xaml.cs">
       <DependentUpon>usersLoginPage.xaml</DependentUpon>
     </Compile>
@@ -92,10 +89,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="SearchingPageApp.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SettingPageForTheEntireApp.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

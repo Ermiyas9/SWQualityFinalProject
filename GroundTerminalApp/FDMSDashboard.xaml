@@ -8,7 +8,7 @@
 
         <!-- This stackpanal is for the sidebar navigation we will let the window to be changed when user clicks it
              also We can use it as a navigation to our other window forms -->
-        <StackPanel Background="#333333" Canvas.Left="10" Canvas.Top="0">
+        <StackPanel Background="#333333" Canvas.Left="15" Canvas.Top="100" Height="334" Width="280" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TextBlock Text="FDMS"
                        HorizontalAlignment="Center"
                        FontSize="34"
@@ -55,15 +55,6 @@
                     Height="76" 
                     Click="BtnLoginPage_Click" />
 
-            <Button Content="Settings"
-                    HorizontalAlignment="Left"
-                    HorizontalContentAlignment="Left"
-                    FontSize="20"
-                    FontWeight="Bold"
-                    Background="#333333"
-                    Foreground="White"
-                    Width="290"
-                    Height="76" />
         </StackPanel>
 
         <!-- I put this for the header part like to display titles and so -->
