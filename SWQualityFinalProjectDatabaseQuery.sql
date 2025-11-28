@@ -119,3 +119,28 @@ CREATE TABLE AppUser (
     appUserRole_ID INT FOREIGN KEY REFERENCES Role(appUserRole_ID)
 );
 GO
+
+-- List seeded Aircraft
+SELECT * FROM dbo.Aircraft;
+
+-- List seeded Flights
+SELECT * FROM dbo.Flight;
+
+-- List Channels
+SELECT * FROM dbo.Channel;
+
+-- List Telemetry Samples
+SELECT * FROM dbo.TelemetrySample;
+
+-- List Transmission Error Logs
+SELECT * FROM dbo.TransmissionErrorLog;
+
+-- List Packet Formats
+SELECT * FROM dbo.PacketFormat;
+
+-- List Roles
+SELECT * FROM dbo.Role;
+
+-- List App Users
+SELECT * FROM dbo.AppUser;
+GO

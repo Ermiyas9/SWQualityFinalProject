@@ -1,6 +1,8 @@
 ﻿<Window x:Class="GroundTerminalApp.FDMSDashboard"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+        xmlns:wfc="clr-namespace:System.Windows.Forms.DataVisualization.Charting;assembly=System.Windows.Forms.DataVisualization"
         Title="FDMS Dashboard" Height="750" Width="1200"
         Background="#1E1E2F" FontFamily="Arial" FontSize="20">
 
@@ -8,7 +10,13 @@
 
         <!-- This stackpanal is for the sidebar navigation we will let the window to be changed when user clicks it
              also We can use it as a navigation to our other window forms -->
-        <StackPanel Background="#333333" Canvas.Left="15" Canvas.Top="100" Height="334" Width="280" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <StackPanel Background="#333333"
+                    Canvas.Left="15"
+                    Canvas.Top="10"
+                    Height="334"
+                    Width="280"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top">
             <TextBlock Text="FDMS"
                        HorizontalAlignment="Center"
                        FontSize="34"
@@ -52,9 +60,8 @@
                     Background="#333333"
                     Foreground="White"
                     Width="290"
-                    Height="76" 
+                    Height="76"
                     Click="BtnLoginPage_Click" />
-
         </StackPanel>
 
         <!-- I put this for the header part like to display titles and so -->
@@ -75,12 +82,10 @@
                     Width="250"
                     Height="151"
                     Margin="10">
-
                 <StackPanel>
                     <Label Content="Altitude"
                            Foreground="White"
                            Margin="10,10,100,0" />
-
                     <Label x:Name="LblAltitudeValue"
                            Content="Altitude: N/A"
                            Foreground="White"
@@ -93,17 +98,14 @@
                     Width="250"
                     Height="154"
                     Margin="10">
-
                 <StackPanel>
                     <Label Content="Attitude"
                            Foreground="White"
                            Margin="10,10,10,0" />
-
                     <Label x:Name="LblPitchValue"
                            Content="Pitch: N/A"
                            Foreground="White"
                            Margin="10,0,10,0" />
-
                     <Label x:Name="LblBankValue"
                            Content="Bank: N/A"
                            Foreground="White"
@@ -116,22 +118,18 @@
                     Width="250"
                     Height="154"
                     Margin="10">
-
                 <StackPanel>
                     <Label Content="Acceleration"
                            Foreground="White"
                            Margin="10,10,10,0" />
-
                     <Label x:Name="LblAccelXValue"
                            Content="Accel X: N/A"
                            Foreground="White"
                            Margin="10,0,10,0" />
-
                     <Label x:Name="LblAccelYValue"
                            Content="Accel Y: N/A"
                            Foreground="White"
                            Margin="10,0,10,0" />
-
                     <Label x:Name="LblAccelZValue"
                            Content="Accel Z: N/A"
                            Foreground="White"
@@ -139,8 +137,22 @@
                     <!-- Chart control here -->
                 </StackPanel>
             </Border>
-
         </StackPanel>
+
+        <!-- Chart host: embed the WinForms Chart inside WindowsFormsHost -->
+        <wfi:WindowsFormsHost
+            Height="216"
+            Canvas.Left="615"
+            Canvas.Top="294"
+            Width="256"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            x:Name="ChartHostContainer">
+
+            <!-- so if we display line chart here is nice -->
+            <wfc:Chart x:Name="lineChartAlltVsTime" />
+
+        </wfi:WindowsFormsHost>
 
         <!-- a stack panal for displaying the packet counter display -->
         <StackPanel Orientation="Horizontal"
@@ -148,17 +160,15 @@
                     Canvas.Top="320" />
 
         <StackPanel Canvas.Left="900"
-                    Canvas.Top="400">
-
+                    Canvas.Top="280">
             <!-- in the footer i added a package container that is to show a package what we recieved and
                  sent also i am thinking to implement if we did recieved the healthu package or not -->
             <!-- the next oone is the border for Packet Counter section -->
             <Border Background="#222"
                     BorderBrush="White"
                     BorderThickness="1"
-                    Height="229"
-                    Width="250">
-
+                    Height="225"
+                    Width="255">
                 <Border.Clip>
                     <RectangleGeometry RadiusX="8"
                                        RadiusY="8"
@@ -166,17 +176,14 @@
                 </Border.Clip>
 
                 <StackPanel Margin="15">
-
                     <!-- Section Title -->
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,10">
-
                         <Image Source="https://img.icons8.com/arcade/64/counter.png"
                                Width="50"
                                Height="50"
                                Margin="10" />
-
                         <TextBlock Text="Packet Counter"
                                    Foreground="LightSkyBlue"
                                    FontSize="18"
@@ -215,7 +222,6 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="5,2" />
-
                 </StackPanel>
             </Border>
         </StackPanel>
@@ -239,7 +245,6 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Margin="0,10,0,0">
-
                 <!-- Title on top -->
                 <Label x:Name="connForDBStatusTitle"
                        Content="Remote DB Connection"
@@ -252,26 +257,22 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Margin="0,8,0,0">
-
                     <Image x:Name="dbOnlineIcon"
                            Source="https://img.icons8.com/tiny-color/16/online.png"
                            Width="48"
                            Height="48"
                            Visibility="Collapsed" />
-
                     <Image x:Name="dbOfflineIcon"
                            Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
                            Width="48"
                            Height="48"
                            Visibility="Visible" />
-
                     <Label x:Name="dbConnectionStatusLbl"
                            Content="OFFLINE"
                            FontSize="18"
                            Foreground="Red"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0" />
-
                 </StackPanel>
             </StackPanel>
 
@@ -280,7 +281,6 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Margin="0,10,0,0">
-
                 <!-- Title on top -->
                 <Label x:Name="connForStreamStatusTitle"
                        Content="Packet Stream Connection"
@@ -293,30 +293,24 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Margin="0,8,0,0">
-
                     <Image x:Name="streamOnlineIcon"
                            Source="https://img.icons8.com/tiny-color/16/online.png"
                            Width="48"
                            Height="48"
                            Visibility="Collapsed" />
-
                     <Image x:Name="streamOfflineIcon"
                            Source="https://img.icons8.com/3d-fluency/94/wi-fi-disconnected.png"
                            Width="48"
                            Height="48"
                            Visibility="Visible" />
-
                     <Label x:Name="packetStreamStatusLbl"
                            Content="OFFLINE"
                            FontSize="18"
                            Foreground="Red"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0" />
-
                 </StackPanel>
             </StackPanel>
-
         </Grid>
-
     </Canvas>
 </Window>

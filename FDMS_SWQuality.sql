@@ -232,16 +232,9 @@ BEGIN
 END;
 GO
 
-/* ------------------------------------------------------------
-   5. Quick checks
-   ------------------------------------------------------------ */
-
--- List seeded Aircraft
 SELECT * FROM dbo.Aircraft;
-
--- List seeded Flights
 SELECT * FROM dbo.Flight;
-
--- List Channels
 SELECT * FROM dbo.Channel;
-GO
+SELECT * FROM dbo.TelemetrySample;
+SELECT * FROM dbo.TransmissionErrorLog;
+

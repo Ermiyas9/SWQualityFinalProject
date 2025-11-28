@@ -19,6 +19,18 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static GroundTerminalApp.FDMSDashboard;
 
+// for chart 
+using System.Windows.Forms.DataVisualization.Charting;
+using WFChart = System.Windows.Forms.DataVisualization.Charting.Chart;
+using WFChartArea = System.Windows.Forms.DataVisualization.Charting.ChartArea;
+using WFSeries = System.Windows.Forms.DataVisualization.Charting.Series;
+using WFSeriesChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType;
+using WFColor = System.Drawing.Color;
+
+
+
+
+
 
 namespace GroundTerminalApp
 {
@@ -38,6 +50,9 @@ namespace GroundTerminalApp
         {
             InitializeComponent();
 
+            // call the chart display once the app starts 
+            lineChartSetupAndDisplay();
+
             // so I can call that I created in another window, since that method takes label 
             // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
             // so i am passing the images as a parameter
@@ -47,13 +62,101 @@ namespace GroundTerminalApp
             // pass the controls as parameters using the real connection state so it gets offline when its offline 
             searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
 
-
-
-
             // Initialize packet counter and start TCP server
             packetCounter = new TheCounterComponent();
             StartTcpServer();
 
+       
+
+
+        }
+
+        private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
+        {
+            SearchingPageApp searchPage = new SearchingPageApp();
+            searchPage.Owner = this;
+            searchPage.Show();
+        }
+
+        private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
+        {
+            logsPage logsPage = new logsPage();
+            logsPage.Owner = this;
+            logsPage.Show();
+        }
+
+        private void BtnLoginPage_Click(object sender, RoutedEventArgs e)
+        {
+            UsersLoginPage loginPage = new UsersLoginPage();
+            loginPage.Owner = this;
+            loginPage.Show();
+        }
+
+
+        // updating the dashboard UI (packet counter section) from the packet counter
+        private void UpdateDashboardFromCounter()
+        {
+            TelemetryData telemetry = packetCounter.LastTelemetry;
+            int receivedCount = packetCounter.Received;
+            int sentCount = packetCounter.Sent;
+
+            // i added the dropped or corrupt packate field so
+            int droppedCount = packetCounter.Dropped;
+
+            // Update labels (we don't have sent count in here yet)----- I have added the labels thank u
+            PcktRecievedLbl.Content = $"Received: {receivedCount}";
+            LblSent.Content = $"Sent: {sentCount}";
+            LblDropped.Content = $"Dropped: {droppedCount}";
+
+            if (telemetry != null)
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+
+                UpdateLineChart(telemetry);
+
+                // streamOnlineIcon update is handled separately in UpdatingTheStatusOfStream()
+                LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
+                LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
+                LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+
+                LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
+                LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
+                LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
+            }
+            else
+            {
+                this.Title = $"FDMS Dashboard - Received: {receivedCount}";
+            }
+
+            // update the stream status icon and label
+            UpdatingTheStatusOfStream();
+        }
+
+        private void UpdatingTheStatusOfStream()
+        {
+            bool streamOnline = false;
+
+            // by using the LastUpdateOfStream i will know the status of the stream if is online or not 
+            if (packetCounter.LastUpdateOfStream != DateTime.MinValue)
+            {
+                streamOnline = (DateTime.UtcNow - packetCounter.LastUpdateOfStream).TotalSeconds <= 5;
+            }
+
+            // the in this condition i can display or hide the online status 
+            if (streamOnline)
+            {
+                streamOnlineIcon.Visibility = Visibility.Visible;
+                streamOfflineIcon.Visibility = Visibility.Collapsed;
+                packetStreamStatusLbl.Foreground = Brushes.Green;
+                packetStreamStatusLbl.Content = "ONLINE";
+            }
+            else
+            {
+                streamOnlineIcon.Visibility = Visibility.Collapsed;
+                streamOfflineIcon.Visibility = Visibility.Visible;
+                packetStreamStatusLbl.Foreground = Brushes.Red;
+                packetStreamStatusLbl.Content = "OFFLINE";
+            }
         }
 
         // starting the tcp server
@@ -180,69 +283,76 @@ namespace GroundTerminalApp
             return totalRead;
         }
 
-        // updating the dashboard UI (packet counter section) from the packet counter
-        private void UpdateDashboardFromCounter()
+        private void lineChartSetupAndDisplay()
         {
-            TelemetryData telemetry = packetCounter.LastTelemetry;
-            int receivedCount = packetCounter.Received;
-            int sentCount = packetCounter.Sent;
-
-            // i added the dropped or corrupt packate field so
-            int droppedCount = packetCounter.Dropped;
-
-            // Update labels (we don't have sent count in here yet)----- I have added the labels thank u
-            PcktRecievedLbl.Content = $"Received: {receivedCount}";
-            LblSent.Content = $"Sent: {sentCount}";
-            LblDropped.Content = $"Dropped: {droppedCount}";
-
-            if (telemetry != null)
+            // add the chart area once 
+            if (lineChartAlltVsTime.ChartAreas.Count == 0)
             {
-                this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
+                var chartArea = new WFChartArea("MainArea");
+                chartArea.BackColor = WFColor.FromArgb(34, 34, 34); // BG color
 
-                // streamOnlineIcon update is handled separately in UpdatingTheStatusOfStream()
-                LblAltitudeValue.Content = $"Altitude: {telemetry.Altitude:F0} ft";
-                LblPitchValue.Content = $"Pitch: {telemetry.Pitch:F1}°";
-                LblBankValue.Content = $"Bank: {telemetry.Bank:F1}°";
+                // The title for AXISS
+                chartArea.AxisX.Title = "Time";
+                chartArea.AxisY.Title = "Altitude";
 
-                LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
-                LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
-                LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
-            }
-            else
-            {
-                this.Title = $"FDMS Dashboard - Received: {receivedCount}";
+                // color for the chart area 
+                chartArea.AxisX.TitleForeColor = WFColor.Blue;  
+                chartArea.AxisY.TitleForeColor = WFColor.Green;
+                chartArea.AxisX.LabelStyle.ForeColor = WFColor.Pink;
+                chartArea.AxisY.LabelStyle.ForeColor = WFColor.Purple;
+                chartArea.AxisX.MajorGrid.Enabled = false;
+                chartArea.AxisY.MajorGrid.Enabled = false;
+
+                // bfor just show the time not the date 
+                chartArea.AxisX.LabelStyle.Format = "d MMM HH:mm:ss";
+
+                // add the chart 
+                lineChartAlltVsTime.ChartAreas.Add(chartArea);
             }
 
-            // update the stream status icon and label
-            UpdatingTheStatusOfStream();
+            //  so we need to add the att series only if it didnt come from terminal
+            if (lineChartAlltVsTime.Series.FindByName("Altitude") == null)
+            {
+                var altitudeSeries = new WFSeries("Altitude");
+                altitudeSeries.ChartType = WFSeriesChartType.Line;
+                altitudeSeries.Color = WFColor.LightSkyBlue;
+
+                // So we can make the titme stamp to be the x value and the attitude Y
+                altitudeSeries.XValueType = ChartValueType.DateTime;
+                altitudeSeries.BorderWidth = 2;
+                lineChartAlltVsTime.Series.Add(altitudeSeries);
+            }
+
+
+            // styling for the chart bg color and foreclr
+            lineChartAlltVsTime.BackColor = WFColor.FromArgb(34, 34, 34);
+            lineChartAlltVsTime.ForeColor = WFColor.White;
+
+            if (lineChartAlltVsTime.Series["Altitude"].Points.Count == 0)
+            {
+                lineChartAlltVsTime.Series["Altitude"].Points.AddXY(DateTime.Now, 1000);
+            }
         }
 
-        private void UpdatingTheStatusOfStream()
+ 
+        private void UpdateLineChart(TelemetryData telemetry)
         {
-            bool streamOnline = false;
+            // the chart works only when we recieve data 
+            if (telemetry == null) return;
 
-            // by using the LastUpdateOfStream i will know the status of the stream if is online or not 
-            if (packetCounter.LastUpdateOfStream != DateTime.MinValue)
-            {
-                streamOnline = (DateTime.UtcNow - packetCounter.LastUpdateOfStream).TotalSeconds <= 5;
-            }
+            // create a variable that hold the chart series  
+            var seriesForAttitude = lineChartAlltVsTime.Series.FindByName("Altitude");
 
-            // the in this condition i can display or hide the online status 
-            if (streamOnline)
-            {
-                streamOnlineIcon.Visibility = Visibility.Visible;
-                streamOfflineIcon.Visibility = Visibility.Collapsed;
-                packetStreamStatusLbl.Foreground = Brushes.Green;
-                packetStreamStatusLbl.Content = "ONLINE";
-            }
-            else
-            {
-                streamOnlineIcon.Visibility = Visibility.Collapsed;
-                streamOfflineIcon.Visibility = Visibility.Visible;
-                packetStreamStatusLbl.Foreground = Brushes.Red;
-                packetStreamStatusLbl.Content = "OFFLINE";
-            }
+            // then if the series is null rturn if not then add the series from the attitude that comes Ground Terminal
+            if (seriesForAttitude == null) return;
+
+            seriesForAttitude.Points.AddXY(telemetry.Timestamp, telemetry.Altitude);
+
+            // THIS IS OPTIONAL TO KEEP THE CHART TO BE SMALLER
+            if (seriesForAttitude.Points.Count > 1000)
+                seriesForAttitude.Points.RemoveAt(0);
         }
+
 
 
 
@@ -611,26 +721,7 @@ namespace GroundTerminalApp
             }
         }
 
-        private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
-        {
-            SearchingPageApp searchPage = new SearchingPageApp();
-            searchPage.Owner = this;
-            searchPage.Show();
-        }
-
-        private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
-        {
-            logsPage logsPage = new logsPage();
-            logsPage.Owner = this;
-            logsPage.Show();
-        }
-
-        private void BtnLoginPage_Click(object sender, RoutedEventArgs e)
-        {
-            UsersLoginPage loginPage = new UsersLoginPage();
-            loginPage.Owner = this;
-            loginPage.Show();
-        }
+        
 
     }
 }
