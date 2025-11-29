@@ -34,7 +34,8 @@ namespace GroundTerminalApp
         {
             InitializeComponent();
             isAuthenticating = false;
-        }
+            CheckDatabaseConnection();
+		}
 
         /*
         Method: BtnLogin_Click
@@ -198,7 +199,7 @@ namespace GroundTerminalApp
 
 			try
 			{
-				using (SqlConnection conn = ServerConnector.GetConnection())
+                SqlConnection conn = ServerConnector.GetConnection();
 				{
 					conn.Open();
 
@@ -207,12 +208,12 @@ namespace GroundTerminalApp
                         FROM dbo.AppUser
                         WHERE Username = @Username AND [Password] = @Password;";
 
-					using (SqlCommand cmd = new SqlCommand(query, conn))
+                    SqlCommand cmd = new SqlCommand(query, conn);
 					{
 						cmd.Parameters.AddWithValue("@Username", credentials.Username);
 						cmd.Parameters.AddWithValue("@Password", credentials.Password);
 
-						using (SqlDataReader reader = cmd.ExecuteReader())
+                        SqlDataReader reader = cmd.ExecuteReader();
 						{
 							if (reader.Read())
 							{
@@ -223,7 +224,7 @@ namespace GroundTerminalApp
 									result.Message = "Account is disabled.";
 									result.AuthenticatedUser = null;
 
-									WriteSystemLog("WARNING", "UsersLoginPage", "Login failed for disabled account '" + credentials.Username + "'.");
+									WriteSystemLog("ERROR", "UsersLoginPage", "Login failed for disabled account '" + credentials.Username + "'.");
 
 									return result;
 								}
@@ -273,12 +274,12 @@ namespace GroundTerminalApp
         */
 		public static AppUser CurrentUser { get; set; }
 
-		// Method: WriteSystemLog - Inserts one log row into SystemLogs table
+		// Inserts one log row into SystemLogs table
 		private void WriteSystemLog(string level, string source, string message)
 		{
 			try
 			{
-				using (SqlConnection conn = ServerConnector.GetConnection())
+                SqlConnection conn = ServerConnector.GetConnection();
 				{
 					conn.Open();
 
@@ -286,7 +287,7 @@ namespace GroundTerminalApp
                 INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
                 VALUES (@Timestamp, @Level, @Source, @Message);";
 
-					using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    SqlCommand cmd = new SqlCommand(sql, conn);
 					{
 						cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
 						cmd.Parameters.AddWithValue("@Level", level);
@@ -311,6 +312,43 @@ namespace GroundTerminalApp
 			}
 		}
 
+		// Updates DB status label and icons
+		private void UpdateDbConnectionStatus(bool isConnected)
+		{
+			if (isConnected)
+			{
+				dbConnectionStatusLbl.Foreground = Brushes.Green;
+				dbConnectionStatusLbl.Content = "ONLINE";
+				dbOnlineIcon.Visibility = Visibility.Visible;
+				dbOfflineIcon.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				dbConnectionStatusLbl.Foreground = Brushes.Red;
+				dbConnectionStatusLbl.Content = "OFFLINE";
+				dbOfflineIcon.Visibility = Visibility.Visible;
+				dbOnlineIcon.Visibility = Visibility.Collapsed;
+			}
+		}
+
+		// Tests DB connection and updates status controls
+		private bool CheckDatabaseConnection()
+		{
+			try
+			{
+                SqlConnection conn = ServerConnector.GetConnection();
+				{
+					conn.Open();
+					UpdateDbConnectionStatus(true);
+					return true;
+				}
+			}
+			catch
+			{
+				UpdateDbConnectionStatus(false);
+				return false;
+			}
+		}
 	}
 
 	/*
