@@ -54,6 +54,25 @@ namespace GroundTerminalApp
         }
 
 
+        // this class will store the information that comes from Channel table 
+        public class ChannelInfo
+        {
+            public int ChannelId { get; set; }
+            public string ChannelName { get; set; }
+            public string ChannelCode { get; set; }
+            public string Description { get; set; }
+        }
+
+        public class FlightInfo
+        {
+            public int FlightId { get; set; }
+            public int AircraftId { get; set; }
+            public string FlightCode { get; set; }
+            public DateTime DepartureTime { get; set; }
+            public DateTime? ArrivalTime { get; set; } 
+        }
+
+
 
         public bool ConnectToDatabase()
         {
@@ -128,55 +147,209 @@ namespace GroundTerminalApp
         {
             string userInput = SearchBoxTxtBx.Text.Trim();
 
-            if (string.IsNullOrEmpty(userInput))
+            if (GetTargetTableFromInput(userInput) == 1)
             {
-                MessageBox.Show("Please enter a FlightID, TelemetryID, or ChannelID to search.");
+                // take of the first char
+                char firstCharacter = userInput[0];
+
+                // The rest of the string ID
+                string theIDPart = userInput.Substring(1);
+
+                // then convert it to int
+                ParseInt(theIDPart);
+
+                // then call the method that get the flight info
+                
+            }
+            else if (GetTargetTableFromInput(userInput) == 2)
+            {
+
+                // take of the first char
+                char firstCharacter = userInput[0];
+
+                // The rest of the string ID
+                string theIDPart = userInput.Substring(1);
+
+                // then convert it to int
+                int idPart = ParseInt(theIDPart);
+
+                // call the Channel query method 
+                getChannelTableData(idPart);
+            }
+            else if (GetTargetTableFromInput(userInput) == 3)
+            {
+                // take of the first char
+                char firstCharacter = userInput[0];
+
+                // The rest of the string ID
+                string theIDPart = userInput.Substring(1);
+
+                // then convert it to int
+                int idPart = ParseInt(theIDPart);
+
+                // send it to telemetry query to get the table 
+                getDataFrmAircraftTransmitterPackets(idPart);
+            }
+            else
+            {
+                // other wise their is some issue let user to check their input again 
+                MessageBox.Show("Please enter F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)");
 
                 return;
+
             }
-
-            string theSourceTableName = "Channel";
-
-            string theSQLQuery = $@"SELECT ChannelName, ChannelCode, Description 
-                                   FROM {theSourceTableName} 
-                                   WHERE ChannelId = @ChannelId";
-
-
-            // Create the output list
-            List<string> theOutputData = new List<string>();
-
-            // then call the load data method to get the datas from the database 
-            LoadDataFromDatabase(theSQLQuery, theOutputData);
-
-            // bind the entire list to the ListBox
-            SearchIndxListBox.ItemsSource = theOutputData;
-
-            //for (int i = 0; i < theOutputData.Count; i++)
-            //{
-            //    // the we will bind the results to the ListBox to display 
-            //    SearchIndxListBox.ItemsSource = theOutputData[i];
-            //}
         }
 
 
-        // a method to parse user input 
-        private void ParseUserInput(string userInput)
+
+
+        /*  
+         *  METHOD          : ParseInt
+         *  RETURN TYPE     : int
+         *  PARAMETERS      : string valueOfCell         -> String value to parse into integer.
+         *  DESCRIPTION     : Safely parses string values into integers.
+         *                    Returns 0 if parsing fails or value is invalid.
+         */
+        int ParseInt(string valueOfCell)
         {
+            // so first i need to check if the incoming string value is null, empty or just a dash
+            // if that is the case then i will simply return 0 since it is not a valid number
+            if (string.IsNullOrWhiteSpace(valueOfCell) || valueOfCell.Trim() == "-")
+                return 0;
+
+            try
+            {
+                // here i will try to parse the string value into an integer
+                // if the parsing works fine then i will return the integer value
+                return int.Parse(valueOfCell.Trim());
+            }
+            catch
+            {
+                // but if parsing fails for any reason then i will catch the error
+                // and return 0 as a safe default value instead of crashing the app
+                return 0;
+            }
+        }
+
+
+
+
+
+
+        // another method that check the first character and decide which table to query
+        private int GetTargetTableFromInput(string userInput)
+        {
+            char firstCharacter = userInput[0];
+
+            // so if this method returns true, then check the firstcharacter and tell me if it is Flight query, Channer or packate
+            if (ParseUserInput(userInput,  firstCharacter))
+            {
+                if (firstCharacter == 'F')
+                {
+                    return 1;
+                }
+                else if (firstCharacter == 'C')
+                {
+                    return 2;
+                }
+                else if (firstCharacter == 'T')
+                {
+                    return 3;
+                }      
+            }
+
+            return 0; 
+        }
+
+
+        // A method to parse user input
+        private bool ParseUserInput(string userInput, char firstCharacter)
+        {
+            // Check if input is empty or null first
+            if (string.IsNullOrWhiteSpace(userInput))
+            {
+                MessageBox.Show("Input cannot be empty. Please enter F, T, or C followed by the ID.");
+                return false;
+            }
+
+            // Only check the first character
+            firstCharacter = userInput[0];
+
+            if (firstCharacter == 'F' || firstCharacter == 'T' || firstCharacter == 'C')
+            {
+                // its valid input return true other than that return false 
+                // also send the first character in return 
+                return true;
+            }
+            else
+            {
+                MessageBox.Show("Please enter F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)");
+                return false; 
+            }
+        }
+
+        public void getFlightTableData(int userInputIDPart)
+        {
+            string sqlQuery = $@"
+                                SELECT FlightId, AircraftId, FlightCode, DepartureTime, ArrivalTime
+                                FROM dbo.Flight
+                                WHERE FlightId = @{userInputIDPart}";
+
+
+            // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
+            // then we run the reader 
+            using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
+            {
+                // i need a parameter before i excute the reader 
+                cmd.Parameters.AddWithValue("@FlightId", userInputIDPart);
+
+                // the i will excute a reader and import and save the values in the list of worker info
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    List<FlightInfo> flights = new List<FlightInfo>();
+
+                    while (reader.Read())
+                    {
+                        // Convert each value to its own type
+                        int flightId = reader.GetInt32(reader.GetOrdinal("FlightId"));
+                        int aircraftId = reader.GetInt32(reader.GetOrdinal("AircraftId"));
+                        string flightCode = reader["FlightCode"].ToString();
+                        DateTime departureTime = reader.GetDateTime(reader.GetOrdinal("DepartureTime"));
+                        DateTime? arrivalTime = reader.IsDBNull(reader.GetOrdinal("ArrivalTime"))
+                            ? (DateTime?)null
+                            : reader.GetDateTime(reader.GetOrdinal("ArrivalTime"));
+
+                        // Store them into local object
+                        FlightInfo flight = new FlightInfo
+                        {
+                            FlightId = flightId,
+                            AircraftId = aircraftId,
+                            FlightCode = flightCode,
+                            DepartureTime = departureTime,
+                            ArrivalTime = arrivalTime
+                        };
+
+                        // Add to list
+                        flights.Add(flight);
+                    }
+
+                }
+            }
 
         }
 
 
         // method to get the datas from AircraftTransmitterPackets table 
-        private void getDataFrmAircraftTransmitterPackets(string userInputValue)
+        private void getDataFrmAircraftTransmitterPackets(int userInputIDPart)
         {
-            string sqlQuery = $"SELECT * FROM dbo.AircraftTransmitterPackets WHERE @TelemetryId = {userInputValue} ORDER BY TelemetryId;";
+            string sqlQuery = $"SELECT * FROM dbo.AircraftTransmitterPackets WHERE @TelemetryId = {userInputIDPart} ORDER BY TelemetryId;";
 
 
 
             using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
                 // i need a parameter before i excute the reader 
-                cmd.Parameters.AddWithValue($"@{userInputValue}", SearchBoxTxtBx.Text.Trim());
+                cmd.Parameters.AddWithValue($"@{userInputIDPart}", SearchBoxTxtBx.Text.Trim());
 
                 // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -205,16 +378,21 @@ namespace GroundTerminalApp
                 }
             }
         }
-        // here I am thinking a generic method that we can call it from any class 
-        // this method will accept query string , table name , and a list which is the results that comes from the database 
-        public void LoadDataFromDatabase(string theSQLQuery, List<string> theOutputData)
-        {
+      
+
+        public void getChannelTableData(int userInputIDPart)
+        { 
+            string sqlQuery = $@"SELECT ChannelName, ChannelCode, Description 
+                                   FROM Channel 
+                                   WHERE {userInputIDPart} = @ChannelId";
+         
+
             // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
             // then we run the reader 
-            using (var cmd = new SqlCommand(theSQLQuery, serverConnectionForSearchingPage))
+            using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
                 // i need a parameter before i excute the reader 
-                cmd.Parameters.AddWithValue("@ChannelId", SearchBoxTxtBx.Text.Trim());
+                cmd.Parameters.AddWithValue("@ChannelId", userInputIDPart);
 
                 // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -225,15 +403,19 @@ namespace GroundTerminalApp
                         // convert each value to its own type and add it to the list
                         // I dont thing i need to convert them now since the text box only accept string value
                         // oh maybe i need to make convert them to string? 
+                        int channelId = reader.GetInt32(reader.GetOrdinal("ChannelID"));
                         string channelName = reader["ChannelName"].ToString();
                         string channelCode = reader["ChannelCode"].ToString();
                         string description = reader["Description"].ToString();
 
-                        // then i ombine into one string for display in ListBox
-                        string displayRow = $"{channelName} - {channelCode} - {description}";
-                        theOutputData.Add(displayRow);
-
-
+                        // then store them into local
+                        ChannelInfo channel = new ChannelInfo
+                        {
+                            ChannelId = reader.GetInt32(reader.GetOrdinal("ChannelID")),
+                            ChannelName = reader["ChannelName"].ToString(),
+                            ChannelCode = reader["ChannelCode"].ToString(),
+                            Description = reader["Description"].ToString()
+                        };
 
                     }
                 }
