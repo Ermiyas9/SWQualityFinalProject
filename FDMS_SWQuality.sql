@@ -169,6 +169,17 @@ CREATE TABLE dbo.SystemLogsArchive
 );
 GO
 
+-- 2.8 create AppUser table
+CREATE TABLE dbo.AppUser
+(
+    UserId    INT IDENTITY(1,1) NOT NULL PRIMARY KEY,  -- unique user ID
+    Username  NVARCHAR(50)      NOT NULL UNIQUE,       -- login name
+    [Password] NVARCHAR(255)    NOT NULL,              -- plain password for this project
+    RoleId    INT               NOT NULL,              -- simple role/permission level
+    IsActive  BIT               NOT NULL DEFAULT 1     -- 1 = active, 0 = disabled
+);
+GO
+
 -- Drop the table if it already exists
 IF OBJECT_ID('dbo.AircraftTransmitterPackets', 'U') IS NOT NULL
     DROP TABLE dbo.AircraftTransmitterPackets;
@@ -240,6 +251,22 @@ VALUES
     (SYSDATETIME(), N'INFO',  N'Network',     N'Listening for telemetry on port 5000.'),
     (SYSDATETIME(), N'WARN',  N'Database',    N'Initial connection attempt failed; retrying.'),
     (SYSDATETIME(), N'ERROR', N'PacketParse', N'Checksum mismatch for telemetry packet ID 25.');
+GO
+
+-- 3.5 Seed AppUser table
+INSERT INTO dbo.AppUser (Username, [Password], RoleId, IsActive)
+VALUES
+    (N'admin', N'admin', 1, 1),
+
+    (N'user1', N'user1', 2, 1),
+    (N'user2', N'user2', 2, 1),
+    (N'user3', N'user3', 2, 1),
+    (N'user4', N'user4', 2, 1),
+    (N'user5', N'user5', 2, 1),
+    (N'user6', N'user6', 2, 1),
+    (N'user7', N'user7', 2, 1),
+    (N'user8', N'user8', 2, 1),
+    (N'user9', N'user9', 2, 1);
 GO
 
 /* ------------------------------------------------------------
