@@ -45,6 +45,7 @@ namespace GroundTerminalApp
         private TheCounterComponent packetCounter;
         private const int DefaultListenPort = 5000; // default port if it's not set in config
         private int listenPort;
+        
 
         public FDMSDashboard()
         {
@@ -55,7 +56,7 @@ namespace GroundTerminalApp
 
             // Pass FDMSDashboard itself into SearchingPageApp so i can access any data from that page 
             var searchPage = new SearchingPageApp(this);
-            searchPage.Show();
+
 
             // so I can call that I created in another window, since that method takes label 
             // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
@@ -91,7 +92,7 @@ namespace GroundTerminalApp
 
         private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
         {
-            logsPage logsPage = new logsPage();
+            logsPage logsPage = new logsPage(this);
             logsPage.Owner = this;
             logsPage.Show();
         }

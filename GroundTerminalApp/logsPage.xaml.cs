@@ -25,6 +25,9 @@ namespace GroundTerminalApp
         // I am adding this because i modified search page to accept window as parameter so logsPage needs a reference to search
         private SearchingPageApp searchingPage;
 
+        SearchingPageApp searchingPageInstance;
+        FDMSDashboard dashboard;
+
 
         /*
         Method: logsPage (Constructor)
@@ -33,7 +36,7 @@ namespace GroundTerminalApp
              log auto-refresh and database connection monitoring.
         */
 
-        public logsPage(SearchingPageApp searchingPageInstance)
+        public logsPage(FDMSDashboard dashboardInstance)
         {
             InitializeComponent();
             InitializeData();
@@ -43,6 +46,7 @@ namespace GroundTerminalApp
             CmbLogLevel.SelectedIndex = 0;
 
             searchingPage = searchingPageInstance;
+            dashboard = dashboardInstance;
         }
         /*
         Method: InitializeData
@@ -57,7 +61,7 @@ namespace GroundTerminalApp
             filteredLogEntries = new ObservableCollection<LogEntry>();
             LogsDataGrid.ItemsSource = filteredLogEntries;
 
-            searchingPage =
+            searchingPage = searchingPageInstance;
         }
         /*
         Method: SetupEventHandlers
@@ -420,7 +424,7 @@ namespace GroundTerminalApp
                 connectionCheckTimer?.Stop();
 
                 // Create and show Search & Query page (matching Dashboard naming)
-                var searchPage = new SearchingPageApp(this);
+                var searchPage = new SearchingPageApp(dashboard);
                 searchPage.Show();
 
                 // Close current window
