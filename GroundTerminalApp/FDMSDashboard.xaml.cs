@@ -51,8 +51,11 @@ namespace GroundTerminalApp
         {
             InitializeComponent();
 
-            // call the chart display once the app starts to display our line chart 
-            LineChartSetupAndDisplay();
+            // log that the dashboard UI has loaded
+            WriteSystemLog("INFO", "FDMSDashboard", "Ground terminal dashboard started.");
+
+			// call the chart display once the app starts to display our line chart 
+			LineChartSetupAndDisplay();
 
             // Pass FDMSDashboard itself into SearchingPageApp so i can access any data from that page 
             var searchPage = new SearchingPageApp(this);
@@ -64,8 +67,18 @@ namespace GroundTerminalApp
             //var searchPage = new SearchingPageApp();
             bool connected = searchPage.ConnectToDatabase();
 
-            // pass the controls as parameters using the real connection state so it gets offline when its offline 
-            searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
+			// log the result of the first database connection test
+			if (connected)
+			{
+				WriteSystemLog("INFO", "FDMSDashboard", "Initial database connection succeeded.");
+			}
+			else
+			{
+				WriteSystemLog("ERROR", "FDMSDashboard", "Initial database connection failed.");
+			}
+
+			// pass the controls as parameters using the real connection state so it gets offline when its offline 
+			searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
 
             // Initialize packet counter and start TCP server
             packetCounter = new TheCounterComponent();
@@ -226,12 +239,56 @@ namespace GroundTerminalApp
             catch (Exception ex)
             {
                 Console.WriteLine("DB insert failed (AircraftTransmitterPackets): " + ex.Message);
-            }
-        }
+				WriteSystemLog("ERROR", "FDMSDashboard", "DB insert failed (AircraftTransmitterPackets): " + ex.Message);
+			}
+		}
+
+		// write system log to database
+		private void WriteSystemLog(string level, string source, string message)
+		{
+			try
+			{
+				using (SqlConnection conn = ServerConnector.GetConnection())
+				{
+					conn.Open();
+
+					// insert one row into the SystemLogs table
+					string sql = @"
+                        INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
+                        VALUES (@Timestamp, @Level, @Source, @Message);";
+
+					using (SqlCommand cmd = new SqlCommand(sql, conn))
+					{
+						// I am using current time for the Timestamp column
+						cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+						cmd.Parameters.AddWithValue("@Level", level);
+						cmd.Parameters.AddWithValue("@Source", source);
+						cmd.Parameters.AddWithValue("@Message", message);
+
+						cmd.ExecuteNonQuery(); // run the INSERT
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// If logging to database fails, I just write to local file as backup
+				try
+				{
+					File.AppendAllText(
+						"local_error_log.txt",
+						DateTime.Now.ToString("s") + " [LogError] " + ex.Message + Environment.NewLine
+					);
+				}
+				catch
+				{
+					// ignore if even this fails
+				}
+			}
+		}
 
 
-        // starting the tcp server
-        private void StartTcpServer()
+		// starting the tcp server
+		private void StartTcpServer()
         {
             listenerCancellation = new CancellationTokenSource();
 
@@ -248,7 +305,10 @@ namespace GroundTerminalApp
             tcpListener = new TcpListener(IPAddress.Any, listenPort);
             tcpListener.Start();
 
-            Task acceptTask = AcceptClients(listenerCancellation.Token);
+			// log that the TCP server started on this port
+			WriteSystemLog("INFO", "FDMSDashboard", "TCP server started on port " + listenPort + ".");
+
+			Task acceptTask = AcceptClients(listenerCancellation.Token);
         }
 
         // stopping the tcp server
@@ -265,12 +325,16 @@ namespace GroundTerminalApp
                 {
                     tcpListener.Stop();
                 }
-            }
+
+				// log that the TCP server stopped
+				WriteSystemLog("INFO", "FDMSDashboard", "TCP server stopped.");
+			}
             catch (Exception ex)
             {
                 Console.WriteLine("Error stopping TCP server: " + ex.Message);
-            }
-        }
+				WriteSystemLog("ERROR", "FDMSDashboard", "Error stopping TCP server: " + ex.Message);
+			}
+		}
 
         // accepting clients
         private async Task AcceptClients(CancellationToken token)
@@ -280,14 +344,19 @@ namespace GroundTerminalApp
                 while (true)
                 {
                     TcpClient client = await tcpListener.AcceptTcpClientAsync();
-                    Task clientTask = Task.Run(() => HandleClient(client, token));
+
+					// log that a new client connected
+					WriteSystemLog("INFO", "FDMSDashboard", "Client connected: " + client.Client.RemoteEndPoint);
+
+					Task clientTask = Task.Run(() => HandleClient(client, token));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error accepting client: " + ex.Message);
-            }
-        }
+				WriteSystemLog("ERROR", "FDMSDashboard", "Error accepting client: " + ex.Message);
+			}
+		}
 
 
         // handling clients by reading packets and processing them
