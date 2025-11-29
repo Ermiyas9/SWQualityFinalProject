@@ -9,18 +9,18 @@
 
         <!-- this is the main title for the search window -->
         <Label Content="Search and Query" FontSize="36" FontWeight="Bold"
-               Foreground="White" Canvas.Left="20" Canvas.Top="10"/>
+               Foreground="LightGreen" Canvas.Left="465" Canvas.Top="4"/>
 
         <!-- this section is for showing the index list we can select from also it will be populate based on the list count  -->
-        <Label Content="Search Result" FontSize="24" FontWeight="Bold"
-               Foreground="White" Canvas.Left="35" Canvas.Top="91"/>
+        <Label Content="Search Result" FontSize="28" 
+               Foreground="#FFA500" Canvas.Left="75" Canvas.Top="89"/>
 
         <!-- Subtle card behind the list for better visual grouping -->
         <Border Canvas.Left="20" Canvas.Top="139" Width="290" Height="399"
                 CornerRadius="12" Background="#2A2A3D" BorderBrush="#3A3A52" BorderThickness="1">
             <ListBox x:Name="SearchIndxListBox"
          Background="#333333"
-         Foreground="White"
+         Foreground="#00FFFF"
          FontSize="16"
          BorderThickness="0"
          Margin="10">
@@ -36,7 +36,7 @@
         </Border>
 
         <!-- this is the result section where we show metrics and charts also we must collect a correct flight ID to pull out the information ..??-->
-      <Label Content="Search by typing F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)"
+        <Label Content="Search by typing F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)"
              FontSize="15"
              Foreground="LightGray" Canvas.Left="350" Canvas.Top="80"/>
 
@@ -154,7 +154,7 @@
             </StackPanel>
         </Border>
 
- 
+
         <Border Background="#2A2A3D" Canvas.Left="345" Canvas.Top="489"
                 Width="360" Height="240" CornerRadius="12"
                 BorderBrush="#3A3A52" BorderThickness="1">
@@ -191,8 +191,7 @@
             <Label x:Name="connectionStatusHeading"
                    Content="Connection Status"
                    FontSize="22"
-                   FontWeight="Bold"
-                   Foreground="White"
+                   Foreground="LightGray"
                    Grid.Row="0"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"/>

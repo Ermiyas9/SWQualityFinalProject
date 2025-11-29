@@ -124,7 +124,7 @@
                         Margin="0,8,0,0">
 
                 <Image x:Name="dbOnlineIcon"
-                       Source="https://img.icons8.com/tiny-color/16/online.png"
+                       Source="https://img.icons8.com/nolan/64/online.png"
                        Width="48"
                        Height="48"
                        Visibility="Collapsed" />

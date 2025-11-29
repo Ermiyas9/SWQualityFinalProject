@@ -215,7 +215,7 @@ namespace GroundTerminalApp
                 displayItems.Add($"Channel ID: {c.ChannelId}");
                 displayItems.Add($"Channel Name: {c.ChannelName}");
                 displayItems.Add($"Channel Code: {c.ChannelCode}");
-                displayItems.Add($"Description: {c.Description}");
+                displayItems.Add($"Description: \n{c.Description}");
             }
             // Telemetry data
             else if (returnedValue == 3 && telemetryList.Any())
