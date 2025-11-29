@@ -177,22 +177,39 @@ VALUES
     (N'Pitch / Roll / Yaw', N'ATT', N'Attitude / orientation'),
     (N'Altitude',           N'ALT', N'Barometric altitude'),
     (N'Engine / Airspeed',  N'ENG', N'Engine or airspeed related'),
-    (N'Generic',            N'GEN', N'Generic telemetry channel');
+    (N'Fuel Level',         N'FUEL', N'Fuel quantity monitoring'),
+    (N'System Health',      N'SYS',  N'Overall system diagnostics'),
+    (N'GPS Position',       N'GPS',  N'Latitude / Longitude tracking'),
+    (N'Acceleration',       N'ACC',  N'Linear acceleration data'),
+    (N'Weight',             N'WGT',  N'Aircraft gross weight'),
+    (N'Temperature',        N'TEMP', N'Environmental or engine temperature'),
+    (N'Pressure',           N'PRS',  N'Cabin or system pressure');
 GO
+
 
 -- 3.2 Aircraft (three examples to match your txt files)
 INSERT INTO dbo.Aircraft (TailNumber, Model, Manufacturer)
 VALUES
     (N'C-FGAX', N'Test Model A', N'FDMS Demo'),
     (N'C-GEFC', N'Test Model B', N'FDMS Demo'),
-    (N'C-QWWT', N'Test Model C', N'FDMS Demo');
+    (N'C-QWWT', N'Test Model C', N'FDMS Demo'),
+    (N'C-HJKL', N'Test Model D', N'FDMS Demo'),
+    (N'C-MNOP', N'Test Model E', N'FDMS Demo'),
+    (N'C-QRST', N'Test Model F', N'FDMS Demo'),
+    (N'C-UVWX', N'Test Model G', N'FDMS Demo'),
+    (N'C-YZAB', N'Test Model H', N'FDMS Demo'),
+    (N'C-CDEF', N'Test Model I', N'FDMS Demo'),
+    (N'C-GHIJ', N'Test Model J', N'FDMS Demo');
 GO
 
+
 -- 3.3 Flight (one flight per aircraft for testing)
+-- One flight per aircraft for testing
 INSERT INTO dbo.Flight (AircraftId, FlightCode, DepartureTime, ArrivalTime)
 SELECT AircraftId, N'TEST-' + TailNumber + N'-1', SYSDATETIME(), NULL
 FROM dbo.Aircraft;
 GO
+
 
 /* ------------------------------------------------------------
    4. Basic queries (stored procedures)
@@ -262,4 +279,3 @@ SELECT * FROM dbo.TransmissionErrorLog;
 
 SELECT * FROM dbo.AircraftTransmitterPackets
 
--- 

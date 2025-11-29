@@ -37,6 +37,24 @@ namespace GroundTerminalApp
         // i added this to store the database connection to a class level field 
         private SqlConnection serverConnectionForSearchingPage;
 
+        // this class I am using it to store the data that comes from the table and I will make it list object
+        private List<TelemetryData> telemetryData = new List<TelemetryData>();
+        public class TelemetryData
+        {
+            public int TelemetryId { get; set; }
+            public DateTime Timestamp { get; set; }
+            public string TailNumber { get; set; }
+            public int Checksum { get; set; }
+            public double Altitude { get; set; }
+            public double Pitch { get; set; }
+            public double Bank { get; set; }
+            public double AccelX { get; set; }
+            public double AccelY { get; set; }
+            public double AccelZ { get; set; }
+        }
+
+
+
         public bool ConnectToDatabase()
         {
             // then call the GetConnection method from another window to get the connection 
@@ -80,7 +98,7 @@ namespace GroundTerminalApp
             }
 
 
-            
+
         }
         public void UpdateConnectionStatus(Label connectionStatusLbl, Image onlineIcon, Image offlineIcon, bool isConnected)
         {
@@ -108,11 +126,12 @@ namespace GroundTerminalApp
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
-            string ChannelCode = SearchBox.Text.Trim();
+            string userInput = SearchBoxTxtBx.Text.Trim();
 
-            if (string.IsNullOrEmpty(ChannelCode))
+            if (string.IsNullOrEmpty(userInput))
             {
-                MessageBox.Show("Please enter a Flight ID to search.");
+                MessageBox.Show("Please enter a FlightID, TelemetryID, or ChannelID to search.");
+
                 return;
             }
 
@@ -127,7 +146,7 @@ namespace GroundTerminalApp
             List<string> theOutputData = new List<string>();
 
             // then call the load data method to get the datas from the database 
-            LoadDataFromDatabase(theSQLQuery,  theOutputData);
+            LoadDataFromDatabase(theSQLQuery, theOutputData);
 
             // bind the entire list to the ListBox
             SearchIndxListBox.ItemsSource = theOutputData;
@@ -137,21 +156,65 @@ namespace GroundTerminalApp
             //    // the we will bind the results to the ListBox to display 
             //    SearchIndxListBox.ItemsSource = theOutputData[i];
             //}
+        }
 
 
+        // a method to parse user input 
+        private void ParseUserInput(string userInput)
+        {
 
         }
 
+
+        // method to get the datas from AircraftTransmitterPackets table 
+        private void getDataFrmAircraftTransmitterPackets(string userInputValue)
+        {
+            string sqlQuery = $"SELECT * FROM dbo.AircraftTransmitterPackets WHERE @TelemetryId = {userInputValue} ORDER BY TelemetryId;";
+
+
+
+            using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
+            {
+                // i need a parameter before i excute the reader 
+                cmd.Parameters.AddWithValue($"@{userInputValue}", SearchBoxTxtBx.Text.Trim());
+
+                // the i will excute a reader and import and save the values in the list of worker info
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    // I will read the data from the reader and save it in the list for each rows
+                    while (reader.Read())
+                    {
+
+                        var telemetry = new TelemetryData
+                        {
+                            TelemetryId = reader.GetInt32(reader.GetOrdinal("TelemetryId")),
+                            Timestamp = reader.GetDateTime(reader.GetOrdinal("SampleTimeStamp")),
+                            TailNumber = reader.GetString(reader.GetOrdinal("TailNumber")),
+                            Checksum = reader.GetInt32(reader.GetOrdinal("Checksum")),
+                            Altitude = reader.GetDouble(reader.GetOrdinal("Altitude")),
+                            Pitch = reader.GetDouble(reader.GetOrdinal("Pitch")),
+                            Bank = reader.GetDouble(reader.GetOrdinal("Bank")),
+                            AccelX = reader.GetDouble(reader.GetOrdinal("AccelX")),
+                            AccelY = reader.GetDouble(reader.GetOrdinal("AccelY")),
+                            AccelZ = reader.GetDouble(reader.GetOrdinal("AccelZ"))
+                        };
+
+                        telemetryData.Add(telemetry);
+                    }
+
+                }
+            }
+        }
         // here I am thinking a generic method that we can call it from any class 
         // this method will accept query string , table name , and a list which is the results that comes from the database 
-        public void LoadDataFromDatabase ( string theSQLQuery, List<string> theOutputData)
+        public void LoadDataFromDatabase(string theSQLQuery, List<string> theOutputData)
         {
             // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
             // then we run the reader 
             using (var cmd = new SqlCommand(theSQLQuery, serverConnectionForSearchingPage))
             {
                 // i need a parameter before i excute the reader 
-                cmd.Parameters.AddWithValue("@ChannelId", SearchBox.Text.Trim());
+                cmd.Parameters.AddWithValue("@ChannelId", SearchBoxTxtBx.Text.Trim());
 
                 // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -178,6 +241,6 @@ namespace GroundTerminalApp
 
         }
 
-
     }
+
 }

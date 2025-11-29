@@ -64,11 +64,11 @@
     <Compile Include="logsPage.xaml.cs">
       <DependentUpon>logsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SearchingPageApp.xaml.cs">
-      <DependentUpon>SearchingPageApp.xaml</DependentUpon>
-    </Compile>
     <Compile Include="usersLoginPage.xaml.cs">
       <DependentUpon>usersLoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SearchingPageApp.xaml.cs">
+      <DependentUpon>SearchingPageApp.xaml</DependentUpon>
     </Compile>
     <Page Include="FDMSDashboard.xaml">
       <SubType>Designer</SubType>
@@ -85,11 +85,11 @@
     <Compile Include="FDMSDashboard.xaml.cs">
       <DependentUpon>FDMSDashboard.xaml</DependentUpon>
     </Compile>
-    <Page Include="SearchingPageApp.xaml">
+    <Page Include="usersLoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="usersLoginPage.xaml">
+    <Page Include="SearchingPageApp.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

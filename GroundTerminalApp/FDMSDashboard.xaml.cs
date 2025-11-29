@@ -196,13 +196,13 @@ namespace GroundTerminalApp
                 {
                     conn.Open();
 
-                    string sql = @"
-                                    INSERT INTO dbo.AircraftTransmitterPackets
-                                    (SampleTimeStamp, TailNumber, [Checksum], Altitude, Pitch, Bank, AccelX, AccelY, AccelZ)
-                                    VALUES
-                                    (@SampleTimeStamp, @TailNumber, @Checksum, @Altitude, @Pitch, @Bank, @AccelX, @AccelY, @AccelZ)";
+                    string sqlForStoringPcktsToTable = @"
+                                                        INSERT INTO dbo.AircraftTransmitterPackets
+                                                        (SampleTimeStamp, TailNumber, [Checksum], Altitude, Pitch, Bank, AccelX, AccelY, AccelZ)
+                                                        VALUES
+                                                        (@SampleTimeStamp, @TailNumber, @Checksum, @Altitude, @Pitch, @Bank, @AccelX, @AccelY, @AccelZ)";
 
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    using (SqlCommand cmd = new SqlCommand(sqlForStoringPcktsToTable, conn))
                     {
                         cmd.Parameters.AddWithValue("@SampleTimeStamp", telemetry.Timestamp);
                         cmd.Parameters.AddWithValue("@TailNumber", telemetry.TailNumber);
