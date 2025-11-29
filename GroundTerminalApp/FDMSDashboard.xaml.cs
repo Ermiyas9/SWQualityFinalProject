@@ -53,10 +53,14 @@ namespace GroundTerminalApp
             // call the chart display once the app starts to display our line chart 
             LineChartSetupAndDisplay();
 
+            // Pass FDMSDashboard itself into SearchingPageApp so i can access any data from that page 
+            var searchPage = new SearchingPageApp(this);
+            searchPage.Show();
+
             // so I can call that I created in another window, since that method takes label 
             // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
             // so i am passing the images as a parameter
-            var searchPage = new SearchingPageApp();
+            //var searchPage = new SearchingPageApp();
             bool connected = searchPage.ConnectToDatabase();
 
             // pass the controls as parameters using the real connection state so it gets offline when its offline 
@@ -80,7 +84,7 @@ namespace GroundTerminalApp
 
         private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
         {
-            SearchingPageApp searchPage = new SearchingPageApp();
+            SearchingPageApp searchPage = new SearchingPageApp(this);
             searchPage.Owner = this;
             searchPage.Show();
         }
@@ -325,6 +329,8 @@ namespace GroundTerminalApp
                             if (telemetry != null)
                             {
                                 SaveGroundTerminalPacketsToDB(telemetry);
+
+                                telemetryDataList.Add(telemetry);
                             }
                             Dispatcher.Invoke(UpdateDashboardFromCounter);
                         }
@@ -755,6 +761,9 @@ namespace GroundTerminalApp
                 }
             }
         }
+
+        // this list is to store the live values so i can pass it to other windows 
+        public List<TelemetryData> telemetryDataList { get; private set; } = new List<TelemetryData>(); 
 
         /*
         Class: TelemetryData

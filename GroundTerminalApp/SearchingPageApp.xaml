@@ -147,8 +147,8 @@
 
                 <Border CornerRadius="8" Background="#1F1F30">
                     <Grid Height="140">
-                        <Polyline Points="0,120 80,110 160,100 240,130 320,95 400,90 480,110 560,85 640,100 760,92"
-                                  Stroke="#7FC4FF" StrokeThickness="2"/>
+                        <Polyline  Stroke="#7FC4FF" StrokeThickness="2"
+                                  Points="{Binding AltitudePoints}" />
                     </Grid>
                 </Border>
             </StackPanel>

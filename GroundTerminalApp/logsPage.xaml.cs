@@ -22,6 +22,9 @@ namespace GroundTerminalApp
         private DispatcherTimer connectionCheckTimer;
 
         private bool isConnected = false;
+        // I am adding this because i modified search page to accept window as parameter so logsPage needs a reference to search
+        private SearchingPageApp searchingPage;
+
 
         /*
         Method: logsPage (Constructor)
@@ -30,7 +33,7 @@ namespace GroundTerminalApp
              log auto-refresh and database connection monitoring.
         */
 
-        public logsPage()
+        public logsPage(SearchingPageApp searchingPageInstance)
         {
             InitializeComponent();
             InitializeData();
@@ -38,6 +41,8 @@ namespace GroundTerminalApp
             InitializeTimers();
 
             CmbLogLevel.SelectedIndex = 0;
+
+            searchingPage = searchingPageInstance;
         }
         /*
         Method: InitializeData
@@ -51,6 +56,8 @@ namespace GroundTerminalApp
             logEntries = new ObservableCollection<LogEntry>();
             filteredLogEntries = new ObservableCollection<LogEntry>();
             LogsDataGrid.ItemsSource = filteredLogEntries;
+
+            searchingPage =
         }
         /*
         Method: SetupEventHandlers
@@ -413,7 +420,7 @@ namespace GroundTerminalApp
                 connectionCheckTimer?.Stop();
 
                 // Create and show Search & Query page (matching Dashboard naming)
-                var searchPage = new SearchingPageApp();
+                var searchPage = new SearchingPageApp(this);
                 searchPage.Show();
 
                 // Close current window

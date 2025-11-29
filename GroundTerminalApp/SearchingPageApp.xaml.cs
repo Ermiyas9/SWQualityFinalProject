@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -17,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using static GroundTerminalApp.FDMSDashboard;
 
 namespace GroundTerminalApp
@@ -26,7 +28,7 @@ namespace GroundTerminalApp
     /// </summary>
     public partial class SearchingPageApp : Window
     {
-        public SearchingPageApp()
+        public SearchingPageApp(FDMSDashboard dashboardInstance) // I am letting this page to pass the object as param
         {
             InitializeComponent();
 
@@ -34,11 +36,22 @@ namespace GroundTerminalApp
 
             // pass the controls as parameters
             UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
+            DataContext = this;
+            dashboard = dashboardInstance;
+
+            // Start chart timer here so i can display the live data from dashboard 
+            DispatcherTimer chartTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            chartTimer.Tick += (s, e) => UpdateAltitudeTrend();
+            chartTimer.Start();
         }
 
-        
+        private FDMSDashboard dashboard;
 
-
+        // Declare AltitudePoints as an observable collection of Points to do the live data display
+        public ObservableCollection<Point> AltitudePoints { get; set; } = new ObservableCollection<Point>();
 
         public bool ConnectToDatabase()
         {
@@ -244,7 +257,27 @@ namespace GroundTerminalApp
 
 
 
+        private void UpdateAltitudeTrend()
+        {
+            // so since i am sharing object of dashoard page so i can access  telemetryList class that  saves the live data 
 
+            AltitudePoints.Clear();
+
+            int x = 0;
+
+            // Loop through the telemetry list (not a single TelemetryData object)
+           foreach (var t in dashboard.telemetryDataList)
+            {
+                AltitudePoints.Add(new Point(x, 140 - NormalizeAltitude(t.Altitude)));
+                x += 80; // spacing between points
+            }
+        }
+
+        private double NormalizeAltitude(double altitude)
+        {
+            double maxAltitude = 40000; 
+            return (altitude / maxAltitude) * 140;
+        }
 
 
         /*  
