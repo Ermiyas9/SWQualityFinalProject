@@ -145,6 +145,29 @@ CREATE TABLE dbo.TransmissionErrorLog
 );
 GO
 
+-- 2.6 SystemLogs table
+CREATE TABLE dbo.SystemLogs
+(
+    LogId       INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Timestamp] DATETIME2(0)      NOT NULL
+                 CONSTRAINT DF_SystemLogs_Timestamp DEFAULT SYSDATETIME(),
+    [Level]     NVARCHAR(20)      NOT NULL,
+    [Source]    NVARCHAR(100)     NOT NULL,
+    [Message]   NVARCHAR(4000)    NOT NULL
+);
+GO
+
+-- 2.7 SystemLogsArchive table
+CREATE TABLE dbo.SystemLogsArchive
+(
+    LogId       INT            NOT NULL,
+    [Timestamp] DATETIME2(0)   NOT NULL,
+    [Level]     NVARCHAR(20)   NOT NULL,
+    [Source]    NVARCHAR(100)  NOT NULL,
+    [Message]   NVARCHAR(4000) NOT NULL,
+    ArchivedDate DATETIME2(0)  NOT NULL
+);
+GO
 
 -- Drop the table if it already exists
 IF OBJECT_ID('dbo.AircraftTransmitterPackets', 'U') IS NOT NULL
@@ -210,6 +233,14 @@ SELECT AircraftId, N'TEST-' + TailNumber + N'-1', SYSDATETIME(), NULL
 FROM dbo.Aircraft;
 GO
 
+-- 3.4 seed sample log into SystemLogs
+INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
+VALUES
+    (SYSDATETIME(), N'INFO',  N'Dashboard',   N'Ground terminal UI started.'),
+    (SYSDATETIME(), N'INFO',  N'Network',     N'Listening for telemetry on port 5000.'),
+    (SYSDATETIME(), N'WARN',  N'Database',    N'Initial connection attempt failed; retrying.'),
+    (SYSDATETIME(), N'ERROR', N'PacketParse', N'Checksum mismatch for telemetry packet ID 25.');
+GO
 
 /* ------------------------------------------------------------
    4. Basic queries (stored procedures)
