@@ -192,7 +192,8 @@ namespace GroundTerminalApp
             // Query database with username and password
             // Return AuthenticationResult with success/failure and user data
 
-            
+            // Temporary stub to satisfy CS0161 and avoid IDE0060
+            return null;
         }
 
         /*

@@ -14,9 +14,9 @@
         <Border Background="#2A2A40"
                 CornerRadius="12"
                 Padding="30"
-                Margin="30"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center">
+                Margin="57,15,0,0"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left">
 
             <!-- Use Grid to separate login form and DB status -->
             <Grid>
@@ -62,7 +62,9 @@
                                  Margin="0,0,0,25"/>
 
                     <!-- Login Button -->
-                    <Button Content="Login"
+                    <Button 
+                        x:Name="BtnLogin"
+                        Content="Login"
                             Height="40"
                             Background="#4CAF50"
                             Foreground="White"

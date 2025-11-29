@@ -18,11 +18,21 @@
         <!-- Subtle card behind the list for better visual grouping -->
         <Border Canvas.Left="20" Canvas.Top="139" Width="290" Height="399"
                 CornerRadius="12" Background="#2A2A3D" BorderBrush="#3A3A52" BorderThickness="1">
-            <Grid Margin="10">
-                <ListBox x:Name="SearchIndxListBox"
-                         Background="#333333" Foreground="White" FontSize="18"
-                         BorderThickness="0" />
-            </Grid>
+            <ListBox x:Name="SearchIndxListBox"
+         Background="#333333"
+         Foreground="White"
+         FontSize="16"
+         BorderThickness="0"
+         Margin="10">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="5">
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
         </Border>
 
         <!-- this is the result section where we show metrics and charts also we must collect a correct flight ID to pull out the information ..??-->
@@ -39,7 +49,7 @@
                  FontSize="18" BorderBrush="#3A3A52" BorderThickness="1"
                  Padding="10" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
-        <!-- Search button -->
+        <!-- Search button an -->
         <Button x:Name="SearchButton" Content="Search" Width="120" Height="40"
                 Canvas.Left="780" Canvas.Top="119"
                 Background="#7FC4FF" Foreground="#0B2545"

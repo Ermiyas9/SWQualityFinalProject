@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using static GroundTerminalApp.FDMSDashboard;
 
@@ -34,43 +36,7 @@ namespace GroundTerminalApp
             UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
         }
 
-        // i added this to store the database connection to a class level field 
-        private SqlConnection serverConnectionForSearchingPage;
-
-        // this class I am using it to store the data that comes from the table and I will make it list object
-        private List<TelemetryData> telemetryData = new List<TelemetryData>();
-        public class TelemetryData
-        {
-            public int TelemetryId { get; set; }
-            public DateTime Timestamp { get; set; }
-            public string TailNumber { get; set; }
-            public int Checksum { get; set; }
-            public double Altitude { get; set; }
-            public double Pitch { get; set; }
-            public double Bank { get; set; }
-            public double AccelX { get; set; }
-            public double AccelY { get; set; }
-            public double AccelZ { get; set; }
-        }
-
-
-        // this class will store the information that comes from Channel table 
-        public class ChannelInfo
-        {
-            public int ChannelId { get; set; }
-            public string ChannelName { get; set; }
-            public string ChannelCode { get; set; }
-            public string Description { get; set; }
-        }
-
-        public class FlightInfo
-        {
-            public int FlightId { get; set; }
-            public int AircraftId { get; set; }
-            public string FlightCode { get; set; }
-            public DateTime DepartureTime { get; set; }
-            public DateTime? ArrivalTime { get; set; } 
-        }
+        
 
 
 
@@ -147,6 +113,15 @@ namespace GroundTerminalApp
         {
             string userInput = SearchBoxTxtBx.Text.Trim();
 
+            LoadData(userInput); 
+        }
+
+        // I am creating a method that update ui 
+        private void LoadData(string userInput)
+        {
+            List<string> displayItems = new List<string>();
+
+
             if (GetTargetTableFromInput(userInput) == 1)
             {
                 // take of the first char
@@ -156,10 +131,14 @@ namespace GroundTerminalApp
                 string theIDPart = userInput.Substring(1);
 
                 // then convert it to int
-                ParseInt(theIDPart);
+                int idPart = ParseInt(theIDPart);
 
-                // then call the method that get the flight info
-                
+                getFlightTableData(idPart);
+
+                // then update the ui 
+                updateUI(userInput);
+
+
             }
             else if (GetTargetTableFromInput(userInput) == 2)
             {
@@ -175,6 +154,13 @@ namespace GroundTerminalApp
 
                 // call the Channel query method 
                 getChannelTableData(idPart);
+
+                // DEBUGGING if u ever see this line delete it before we submit 
+                //MessageBox.Show($"ID {idPart}");
+
+
+                 // then update the ui 
+                 updateUI(userInput);
             }
             else if (GetTargetTableFromInput(userInput) == 3)
             {
@@ -189,6 +175,9 @@ namespace GroundTerminalApp
 
                 // send it to telemetry query to get the table 
                 getDataFrmAircraftTransmitterPackets(idPart);
+
+                // then update the ui 
+                updateUI(userInput);
             }
             else
             {
@@ -199,6 +188,61 @@ namespace GroundTerminalApp
 
             }
         }
+
+
+
+
+
+        private void updateUI(string userInput)
+        {
+            int returnedValue = GetTargetTableFromInput(userInput);
+            var displayItems = new List<string>();
+
+            // Flight data
+            if (returnedValue == 1 && flightsInfoList.Any())
+            {
+                var f = flightsInfoList.First();
+                displayItems.Add($"Flight ID: {f.FlightId}");
+                displayItems.Add($"Aircraft ID: {f.AircraftId}");
+                displayItems.Add($"Flight Code: {f.FlightCode}");
+                displayItems.Add($"Departure Time: {f.DepartureTime:g}");
+                displayItems.Add($"Arrival Time: {(f.ArrivalTime.HasValue ? f.ArrivalTime.Value.ToString("g") : "N/A")}");
+            }
+            // Channel data
+            else if (returnedValue == 2 && channelInfoList.Any())
+            {
+                var c = channelInfoList.First();
+                displayItems.Add($"Channel ID: {c.ChannelId}");
+                displayItems.Add($"Channel Name: {c.ChannelName}");
+                displayItems.Add($"Channel Code: {c.ChannelCode}");
+                displayItems.Add($"Description: {c.Description}");
+            }
+            // Telemetry data
+            else if (returnedValue == 3 && telemetryList.Any())
+            {
+                var t = telemetryList.First();
+                displayItems.Add($"Telemetry ID: {t.TelemetryId}");
+                displayItems.Add($"Timestamp: {t.Timestamp:g}");
+                displayItems.Add($"Tail Number: {t.TailNumber}");
+                displayItems.Add($"Checksum: {t.Checksum}");
+                displayItems.Add($"Altitude: {t.Altitude} ft");
+                displayItems.Add($"Pitch: {t.Pitch}°");
+                displayItems.Add($"Bank: {t.Bank}°");
+                displayItems.Add($"Accel X: {t.AccelX}");
+                displayItems.Add($"Accel Y: {t.AccelY}");
+                displayItems.Add($"Accel Z: {t.AccelZ}");
+            }
+            else
+            {
+                displayItems.Add("Invalid input. Please start with F, T, or C.");
+            }
+
+            // Bind results to UI
+            SearchIndxListBox.ItemsSource = displayItems;
+        }
+
+
+
 
 
 
@@ -293,7 +337,7 @@ namespace GroundTerminalApp
             string sqlQuery = $@"
                                 SELECT FlightId, AircraftId, FlightCode, DepartureTime, ArrivalTime
                                 FROM dbo.Flight
-                                WHERE FlightId = @{userInputIDPart}";
+                                WHERE FlightId = @FlightId";
 
 
             // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
@@ -306,7 +350,7 @@ namespace GroundTerminalApp
                 // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    List<FlightInfo> flights = new List<FlightInfo>();
+                    
 
                     while (reader.Read())
                     {
@@ -330,7 +374,7 @@ namespace GroundTerminalApp
                         };
 
                         // Add to list
-                        flights.Add(flight);
+                        flightsInfoList.Add(flight);
                     }
 
                 }
@@ -342,14 +386,18 @@ namespace GroundTerminalApp
         // method to get the datas from AircraftTransmitterPackets table 
         private void getDataFrmAircraftTransmitterPackets(int userInputIDPart)
         {
-            string sqlQuery = $"SELECT * FROM dbo.AircraftTransmitterPackets WHERE @TelemetryId = {userInputIDPart} ORDER BY TelemetryId;";
+            string sqlQuery = @"
+                                SELECT * 
+                                FROM dbo.AircraftTransmitterPackets 
+                                WHERE TelemetryId = @TelemetryId 
+                                ORDER BY TelemetryId;";
 
 
 
             using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
                 // i need a parameter before i excute the reader 
-                cmd.Parameters.AddWithValue($"@{userInputIDPart}", SearchBoxTxtBx.Text.Trim());
+                cmd.Parameters.AddWithValue("@TelemetryId", userInputIDPart);
 
                 // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -372,7 +420,7 @@ namespace GroundTerminalApp
                             AccelZ = reader.GetDouble(reader.GetOrdinal("AccelZ"))
                         };
 
-                        telemetryData.Add(telemetry);
+                        telemetryList.Add(telemetry);
                     }
 
                 }
@@ -381,11 +429,13 @@ namespace GroundTerminalApp
       
 
         public void getChannelTableData(int userInputIDPart)
-        { 
-            string sqlQuery = $@"SELECT ChannelName, ChannelCode, Description 
-                                   FROM Channel 
-                                   WHERE {userInputIDPart} = @ChannelId";
-         
+        {
+            string sqlQuery = @"
+                                SELECT ChannelId, ChannelName, ChannelCode, Description 
+                                FROM Channel 
+                                WHERE ChannelId = @ChannelId";
+
+
 
             // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
             // then we run the reader 
@@ -417,10 +467,54 @@ namespace GroundTerminalApp
                             Description = reader["Description"].ToString()
                         };
 
+                        channelInfoList.Add(channel);
+
                     }
                 }
             }
 
+        }
+
+        // i added this to store the database connection to a class level field 
+        private SqlConnection serverConnectionForSearchingPage;
+
+        private List<ChannelInfo> channelInfoList = new List<ChannelInfo>();
+
+        private List<FlightInfo> flightsInfoList = new List<FlightInfo>();
+
+        // this class I am using it to store the data that comes from the table and I will make it list object
+        private List<TelemetryData> telemetryList = new List<TelemetryData>();
+        public class TelemetryData
+        {
+            public int TelemetryId { get; set; }
+            public DateTime Timestamp { get; set; }
+            public string TailNumber { get; set; }
+            public int Checksum { get; set; }
+            public double Altitude { get; set; }
+            public double Pitch { get; set; }
+            public double Bank { get; set; }
+            public double AccelX { get; set; }
+            public double AccelY { get; set; }
+            public double AccelZ { get; set; }
+        }
+
+
+        // this class will store the information that comes from Channel table 
+        public class ChannelInfo
+        {
+            public int ChannelId { get; set; }
+            public string ChannelName { get; set; }
+            public string ChannelCode { get; set; }
+            public string Description { get; set; }
+        }
+
+        public class FlightInfo
+        {
+            public int FlightId { get; set; }
+            public int AircraftId { get; set; }
+            public string FlightCode { get; set; }
+            public DateTime DepartureTime { get; set; }
+            public DateTime? ArrivalTime { get; set; }
         }
 
     }
