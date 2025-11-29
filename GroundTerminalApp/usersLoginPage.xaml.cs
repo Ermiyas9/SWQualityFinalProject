@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Windows;
-using System.Windows.Threading;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -14,6 +13,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.IO;
+using static GroundTerminalApp.FDMSDashboard;
 
 
 namespace GroundTerminalApp
@@ -184,33 +186,138 @@ namespace GroundTerminalApp
             TxtPassword.Clear();
         }
 
-     
-        public AuthenticationResult OnLoginAttempt(LoginCredentials credentials)
-        {
-            // TODO: ERMIYAS 
-            // Receive parsed credentials here
-            // Query database with username and password
-            // Return AuthenticationResult with success/failure and user data
+		// Authenticates credentials using AppUser table
+		public AuthenticationResult OnLoginAttempt(LoginCredentials credentials)
+		{
+			var result = new AuthenticationResult
+			{
+				IsSuccess = false,
+				Message = "Invalid username or password.",
+				AuthenticatedUser = null
+			};
 
-            // Temporary stub to satisfy CS0161 and avoid IDE0060
-            return null;
-        }
+			try
+			{
+				using (SqlConnection conn = ServerConnector.GetConnection())
+				{
+					conn.Open();
 
-        /*
+					string query = @"
+                        SELECT UserId, Username, [Password], RoleId, IsActive
+                        FROM dbo.AppUser
+                        WHERE Username = @Username AND [Password] = @Password;";
+
+					using (SqlCommand cmd = new SqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Username", credentials.Username);
+						cmd.Parameters.AddWithValue("@Password", credentials.Password);
+
+						using (SqlDataReader reader = cmd.ExecuteReader())
+						{
+							if (reader.Read())
+							{
+								bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+								if (!isActive)
+								{
+									result.IsSuccess = false;
+									result.Message = "Account is disabled.";
+									result.AuthenticatedUser = null;
+
+									WriteSystemLog("WARNING", "UsersLoginPage", "Login failed for disabled account '" + credentials.Username + "'.");
+
+									return result;
+								}
+
+								var user = new AppUser
+								{
+									UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+									Username = reader.GetString(reader.GetOrdinal("Username")),
+									RoleId = reader.GetInt32(reader.GetOrdinal("RoleId")),
+									IsActive = isActive
+								};
+
+								result.IsSuccess = true;
+								result.Message = "Login successful.";
+								result.AuthenticatedUser = user;
+
+								WriteSystemLog("INFO", "UsersLoginPage", "User '" + credentials.Username + "' logged in successfully.");
+
+								return result;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception)
+			{
+				result.IsSuccess = false;
+				result.Message = "Login failed due to database error.";
+				result.AuthenticatedUser = null;
+
+				WriteSystemLog("ERROR", "UsersLoginPage", "Login failed due to database error.");
+
+				return result;
+			}
+
+			WriteSystemLog("WARN", "UsersLoginPage", "Invalid login attempt for username '" + credentials.Username + "'.");
+			return result;
+		}
+
+
+		/*
         Static Property: CurrentUser
         Description: Stores authenticated user data for application access
         Team members can retrieve user ID and role for authorization
         Usage: CurrentUser?.UserId, CurrentUser?.RoleId
         Cleared on window close for security
         */
-        public static AppUser CurrentUser { get; set; }
-    }
+		public static AppUser CurrentUser { get; set; }
 
-    /*
+		// Method: WriteSystemLog - Inserts one log row into SystemLogs table
+		private void WriteSystemLog(string level, string source, string message)
+		{
+			try
+			{
+				using (SqlConnection conn = ServerConnector.GetConnection())
+				{
+					conn.Open();
+
+					string sql = @"
+                INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
+                VALUES (@Timestamp, @Level, @Source, @Message);";
+
+					using (SqlCommand cmd = new SqlCommand(sql, conn))
+					{
+						cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+						cmd.Parameters.AddWithValue("@Level", level);
+						cmd.Parameters.AddWithValue("@Source", source);
+						cmd.Parameters.AddWithValue("@Message", message);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				try
+				{
+					File.AppendAllText(
+						"local_error_log.txt",
+						DateTime.Now.ToString("s") + " [LoginLogError] " + ex.Message + Environment.NewLine);
+				}
+				catch
+				{
+				}
+			}
+		}
+
+	}
+
+	/*
     Class: LoginCredentials
     Description: Data transfer object containing parsed login credentials
     */
-    public class LoginCredentials
+	public class LoginCredentials
     {
         public string Username { get; set; }             // Parsed from TxtUsername
         public string Password { get; set; }             // Parsed from TxtPassword

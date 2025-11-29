@@ -2,8 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="FDMS Login"
-        Height="450"
+        Height="500"
         Width="400"
+		SizeToContent="Manual"
         Background="#1E1E2F"
         FontFamily="Arial"
         FontSize="16"
@@ -19,14 +20,10 @@
                 HorizontalAlignment="Left">
 
             <!-- Use Grid to separate login form and DB status -->
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+			<StackPanel>
 
-                <!-- Login Form -->
-                <StackPanel Grid.Row="0">
+				<!-- Login Form -->
+                <StackPanel>
                     <!-- Title -->
                     <TextBlock Text="FDMS Login"
                                FontSize="28"
@@ -75,14 +72,14 @@
                     <TextBlock x:Name="LoginStatusLbl"
                                Text=""
                                Foreground="Orange"
-                               FontWeight="SemiBold"
                                Margin="0,15,0,0"
-                               HorizontalAlignment="Center"/>
+                               HorizontalAlignment="Center"
+							   MaxWidth="320" 
+							   FontSize="15"/>
                 </StackPanel>
 
                 <!-- DB Connection Status -->
-                <StackPanel Grid.Row="1"
-                            HorizontalAlignment="Center"
+                <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Margin="0,20,0,0">
 
@@ -119,7 +116,7 @@
                                Margin="10,0,0,0" />
                     </StackPanel>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>
