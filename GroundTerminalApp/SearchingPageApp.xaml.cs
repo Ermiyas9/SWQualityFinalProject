@@ -269,7 +269,7 @@ namespace GroundTerminalApp
            foreach (var t in dashboard.telemetryDataList)
             {
                 AltitudePoints.Add(new Point(x, 140 - NormalizeAltitude(t.Altitude)));
-                x += 80; // spacing between points
+                x += 10; // this is for spacing between points
             }
         }
 
