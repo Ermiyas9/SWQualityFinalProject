@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.Remoting.Channels;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -42,10 +43,13 @@ namespace GroundTerminalApp
             // Start chart timer here so i can display the live data from dashboard 
             DispatcherTimer chartTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(1)
+                Interval = TimeSpan.FromSeconds(1) // update every second
             };
-            chartTimer.Tick += (s, e) => UpdateAltitudeTrend();
+
+            // each tick will call UpdateAltitudeTrend to refresh the snapshot points
+            chartTimer.Tick += (s, e) => LiveUpdateTelemetryLabel();
             chartTimer.Start();
+        
         }
 
         private FDMSDashboard dashboard;
@@ -257,21 +261,33 @@ namespace GroundTerminalApp
 
 
 
-        private void UpdateAltitudeTrend()
+        private void LiveUpdateTelemetryLabel()
         {
-            // so since i am sharing object of dashoard page so i can access  telemetryList class that  saves the live data 
+            var latestPacket = dashboard.telemetryDataList.LastOrDefault();
+            if (latestPacket == null) return;
 
-            AltitudePoints.Clear();
+            QueryStatusChip.Text = "Live Data Ready";
 
-            int x = 0;
+            ResultsHeaderLbl.Content = " Reciving a value of 6 Values";
 
-            // Loop through the telemetry list (not a single TelemetryData object)
-           foreach (var t in dashboard.telemetryDataList)
+            // create a new display object with formatted strings
+            var displayValues = new TelemetryDataNameAndValues
             {
-                AltitudePoints.Add(new Point(x, 140 - NormalizeAltitude(t.Altitude)));
-                x += 10; // this is for spacing between points
-            }
+
+                TailNumber = $"TailNumber = {latestPacket.TailNumber}",
+                Pitch = $"Pitch = {latestPacket.Pitch:F2}",
+                AccelX = $"AccelX = {latestPacket.AccelX:F3}",
+                AccelY = $"AccelY = {latestPacket.AccelY:F3}",
+                AccelZ = $"AccelZ = {latestPacket.AccelZ:F3}",
+                Bank = $"Bank = {latestPacket.Bank:F2}",
+            };
+
+            // update the DataContext so the XAML labels refresh
+            this.DataContext = displayValues;
         }
+
+
+
 
         private double NormalizeAltitude(double altitude)
         {
@@ -484,13 +500,6 @@ namespace GroundTerminalApp
                     while (reader.Read())
                     {
                         // convert each value to its own type and add it to the list
-                        // I dont thing i need to convert them now since the text box only accept string value
-                        // oh maybe i need to make convert them to string? 
-                        int channelId = reader.GetInt32(reader.GetOrdinal("ChannelID"));
-                        string channelName = reader["ChannelName"].ToString();
-                        string channelCode = reader["ChannelCode"].ToString();
-                        string description = reader["Description"].ToString();
-
                         // then store them into local
                         ChannelInfo channel = new ChannelInfo
                         {
@@ -549,6 +558,28 @@ namespace GroundTerminalApp
             public DateTime DepartureTime { get; set; }
             public DateTime? ArrivalTime { get; set; }
         }
+
+        // this class is a control for the line point in the graph so when ever it updates it will
+        // display the temetry data in x their name and y their values 
+        public class TelemetryDataNameAndValues
+        {
+            // each property formats the telemetry field as "Name = Value"
+            public string TailNumber {  get; set; }
+            public string Attitude {  get; set; }
+            public string Pitch {  get; set; }
+            public string AccelX { get; set; }
+            public string AccelY { get; set; }
+            public string AccelZ {  get; set; }
+            public string Bank { get;  set; }
+            public string CheckSum { get; set; } 
+            public string RecievedPacketNumber { get; set; }
+
+        }
+
+
+
+
+
 
     }
 

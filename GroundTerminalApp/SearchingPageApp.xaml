@@ -101,10 +101,10 @@
                 HorizontalAlignment="Center" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Margin="16,12,16,12" VerticalAlignment="Center">
                 <Border Background="#454565" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
-                    <TextBlock x:Name="QueryStatusChip" Text="Ready" Foreground="White"/>
+                    <TextBlock x:Name="QueryStatusChip" Text="Live Data not ready yet" Foreground="White"/>
                 </Border>
                 <Border Background="#454565" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
-                    <TextBlock x:Name="FilterChip" Text="Tail: Any" Foreground="White"/>
+                    <TextBlock x:Name="FilterChip" Text="{Binding TailNumber}" Foreground="White"/>
                 </Border>
                 <Border Background="#454565" CornerRadius="8" Padding="12,6">
                     <TextBlock x:Name="RangeChip" Text="Range: Last 1h" Foreground="White"/>
@@ -133,39 +133,26 @@
 
         <!-- this part is for showing bar graphs and I am thinking displaying line or pie chart here or different one for live data -->
         <Border Background="#2A2A3D" Canvas.Left="345" Canvas.Top="270"
-                Width="800" Height="200" CornerRadius="12"
+                Width="800" Height="400" CornerRadius="12"
                 BorderBrush="#3A3A52" BorderThickness="1">
             <StackPanel Margin="16">
-                <Label Content="Altitude trend (filtered range)" Foreground="LightBlue" FontSize="18"/>
-
-                <Border CornerRadius="8" Background="#1F1F30">
-                    <Grid Height="140">
-                        <Polyline Points="0,120 80,110 160,100 240,130 320,95 400,90 480,110 560,85 640,100 760,92"
-                                  Stroke="#7FC4FF" StrokeThickness="2"/>
-                    </Grid>
-                </Border>
-
-                <Border CornerRadius="8" Background="#1F1F30">
-                    <Grid Height="140">
-                        <Polyline  Stroke="#7FC4FF" StrokeThickness="2"
-                                  Points="{Binding AltitudePoints}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
+                <Label Content="Live Updates for Upcoming FLight)" Foreground="LightGoldenrodYellow" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" Margin="10,25"/>
+                <!-- this is the source to updates the line for live graph kind display -->
+                <StackPanel Orientation="Vertical" Margin="20">
+                    <TextBlock Text="{Binding TailNumber}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding Attitude}" FontSize="20" Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding Pitch}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding AccelX}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding AccelY}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding AccelZ}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                    <TextBlock Text="{Binding Bank}" FontSize="20"  Foreground="Orange" Margin="5"/>
+                </StackPanel>
 
 
-        <Border Background="#2A2A3D" Canvas.Left="345" Canvas.Top="489"
-                Width="360" Height="240" CornerRadius="12"
-                BorderBrush="#3A3A52" BorderThickness="1">
-            <StackPanel Margin="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Label Content="Distribution (Pitch/Bank)" Foreground="LightBlue" FontSize="18" HorizontalAlignment="Center"/>
-                <Grid Width="180" Height="180">
-                    <!--simple circle either i will change it to pie or something else  -->
-                    <Ellipse Fill="#1F1F30" Stroke="#7FC4FF" StrokeThickness="16"/>
-                    <Path Data="M90,10 A80,80 0 1 1 89.9,10"
-                          Stroke="#2A8F4B" StrokeThickness="16" Fill="Transparent" Stretch="Fill"/>
-                </Grid>
+
+
+
+
             </StackPanel>
         </Border>
 
