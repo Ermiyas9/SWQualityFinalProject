@@ -23,12 +23,22 @@ namespace AircraftTransmitter
 			this.serverPort = serverPort;
 		}
 		
+		/// <summary>
+		/// Establishes a connection to the server using the specified IP address and port.
+		/// </summary>
+		/// <param></param>
+		/// <return></return>
 		public void Connect()
 		{
 			client = new TcpClient(serverIp, serverPort);
 			stream = client.GetStream();
 		}
 
+		/// <summary>
+		/// Sends a data packet over the connected stream.
+		/// </summary>
+		/// <param name="packet">The byte array representing the data packet to send. Cannot be null.</param>
+		/// <exception cref="InvalidOperationException">Thrown if the stream is not connected.</exception>
 		public void SendPacket(byte[] packet)
 		{
 			if (stream == null)
@@ -43,6 +53,9 @@ namespace AircraftTransmitter
 			stream.Flush();
 		}
 
+		/// <summary>
+		/// Releases all resources used by the current instance of the class.
+		/// </summary>
 		public void Dispose()
 		{
 			if (stream != null)

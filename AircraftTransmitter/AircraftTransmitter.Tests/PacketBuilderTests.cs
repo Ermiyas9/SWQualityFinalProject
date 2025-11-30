@@ -17,8 +17,12 @@ namespace AircraftTransmitter.Tests
 	[TestClass]
 	public class PacketBuilderTests
 	{
+		/// <summary>
+		/// Tests that the BuildPacket method correctly constructs a telemetry packet from
+		/// a valid input line, ensuring all fields and the checksum are accurate.
+		/// </summary>
 		[TestMethod]
-		public void TestBuildPacket_ValidLine()
+		public void BuildPacket_ValidTelemetryLine_ReturnsPacketWithCorrectFieldsAndChecksum()
 		{
 			// Arrange
 			string tailNumber = "C-FGAX";
@@ -26,10 +30,10 @@ namespace AircraftTransmitter.Tests
 
 			// Act
 			string line = " 7_8_2018 19:34:3,-0.319754, -0.716176, 1.797150, 2154.670410, 1643.844116, 0.022278, 0.033622,";
-			
+
 			byte[] packetBytes = builder.BuildPacket(line);
 			string packetText = Encoding.ASCII.GetString(packetBytes).TrimEnd('\n');
-			
+
 			// Assert
 			string[] parts = packetText.Split('|');
 			Assert.AreEqual(10, parts.Length, "Packet should have 10 parts (tail + timestamp + 7 fields + checksum).");
@@ -55,15 +59,19 @@ namespace AircraftTransmitter.Tests
 			Assert.AreEqual(field6.ToString(CultureInfo.InvariantCulture), parts[7]);
 			Assert.AreEqual(field7.ToString(CultureInfo.InvariantCulture), parts[8]);
 
-			string payloadWithoutChecksum = string.Join("|", parts, 0, 9);
-			int expectedChecksum = ComputeChecksumForTest(payloadWithoutChecksum);
+			double expectedChecksumDouble = (field5 + field6 + field7) / 3.0;
+			int expectedChecksum = (int)expectedChecksumDouble;
 
 			int actualChecksum = int.Parse(parts[9], CultureInfo.InvariantCulture);
 			Assert.AreEqual(expectedChecksum, actualChecksum, "Checksum does not match expected value.");
 		}
 
+		/// <summary>
+		/// Verifies that the BuildPacket method throws an exception when
+		/// provided with an invalid telemetry line.
+		/// </summary>
 		[TestMethod]
-		public void TestBuildPacket_InvalidLine()
+		public void BuildPacket_InvalidTelemetryLine_ThrowsFormatException()
 		{
 			// Arrange
 			string tailNumber = "C-FGAX";
@@ -76,18 +84,26 @@ namespace AircraftTransmitter.Tests
 			Assert.ThrowsException<FormatException>(() => builder.BuildPacket(badLine));
 		}
 
-		// Helper method to compute checksum for test verification
-		private static int ComputeChecksumForTest(string payload)
+		/// <summary>
+		/// Tests that the ComputeChecksum method produces a packet with the expected checksum
+		/// when provided with a specific input line.
+		/// </summary>
+		[TestMethod]
+		public void BuildPacket_SpecExampleLine_ProducesChecksum374()
 		{
-			byte[] bytes = Encoding.ASCII.GetBytes(payload);
-			int sum = 0;
+			string tailNumber = "C-FGAX";
+			PacketBuilder builder = new PacketBuilder(tailNumber);
 
-			foreach (byte b in bytes)
-			{
-				sum += b;
-			}
+			string line = "7_8_2018 19:35:21,-0.799099, 0.047375, 0.028341, 2154.000732, 1124.106079, 0.022695, 0.001006,";
 
-			return sum & 0xFFFF;
+			byte[] packetBytes = builder.BuildPacket(line);
+			string packetText = Encoding.ASCII.GetString(packetBytes).TrimEnd('\n');
+
+			string[] parts = packetText.Split('|');
+			Assert.AreEqual(10, parts.Length);
+
+			int actualChecksum = int.Parse(parts[9], CultureInfo.InvariantCulture);
+			Assert.AreEqual(374, actualChecksum);
 		}
 	}
 }

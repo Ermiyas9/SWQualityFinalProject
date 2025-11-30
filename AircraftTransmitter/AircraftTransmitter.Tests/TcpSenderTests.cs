@@ -18,8 +18,13 @@ namespace AircraftTransmitter.Tests
 	[TestClass]
 	public class TcpSenderTests
 	{
+		/// <summary>
+		/// Verifies that SendPacket, when called with a valid payload and an active
+		/// TCP listener on the loopback address, sends a length-prefixed message
+		/// and the server receives the expected message body.
+		/// </summary>
 		[TestMethod]
-		public void TestSendPacket_ValidMessage()
+		public void SendPacket_ValidMessage_ServerReceivesExpectedBody()
 		{
 			// Arrange
 			TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
