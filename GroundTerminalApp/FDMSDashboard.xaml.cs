@@ -687,129 +687,134 @@ namespace GroundTerminalApp
                 }
             }
 
-            /*
-            Method: DeconstructPacket
-            Description: Parses packet structure, validates checksum, extracts telemetry fields
-            Parameters: string packetLine - Complete packet as ASCII string
-                        out TelemetryData telemetry - Parsed telemetry if valid
-            Returns: bool - True if packet valid and parsed, false if validation/parsing failed
-            */
-            private bool DeconstructPacket(string packetLine, out TelemetryData telemetry)
-            {
-                telemetry = null;
+			/*
+			Method: DeconstructPacket
+			Description: Parses a single FDMS packet, validates the checksum using
+						 the (Altitude + Pitch + Bank) / 3 specification, and
+						 constructs a TelemetryData object when the packet is valid.
+			Parameters: string packetLine - Complete packet line including checksum
+						out TelemetryData telemetry - Parsed telemetry output on success
+			Returns: bool - True if the packet is valid and telemetry was created,
+							false if checksum or parsing fails
+			*/
+			private bool DeconstructPacket(string packetLine, out TelemetryData telemetry)
+			{
+				telemetry = null;
 
-                // Split packet by pipe delimiter
-                string[] parts = packetLine.Split('|');
+				// Split packet by pipe delimiter
+				string[] parts = packetLine.Split('|');
 
-                // Packet must have exactly 10 fields (9 data + 1 checksum)
-                if (parts.Length != 10)
-                    return false;
+				// Packet must have exactly 10 fields (9 data + 1 checksum)
+				if (parts.Length != 10)
+					return false;
 
-                try
-                {
-                    // Extract all fields from packet
-                    string tailNumber = parts[0];
-                    string timestampText = parts[1];
-                    string accelXText = parts[2];
-                    string accelYText = parts[3];
-                    string accelZText = parts[4];
-                    string weightText = parts[5];
-                    string altitudeText = parts[6];
-                    string pitchText = parts[7];
-                    string bankText = parts[8];
-                    string checksumText = parts[9];
+				try
+				{
+					// Extract all fields from packet
+					string tailNumber = parts[0];
+					string timestampText = parts[1];
+					string accelXText = parts[2];
+					string accelYText = parts[3];
+					string accelZText = parts[4];
+					string weightText = parts[5];
+					string altitudeText = parts[6];
+					string pitchText = parts[7];
+					string bankText = parts[8];
+					string checksumText = parts[9];
 
-                    // Validate no empty fields to prevent parsing errors
-                    if (string.IsNullOrWhiteSpace(accelXText) ||
-                        string.IsNullOrWhiteSpace(accelYText) ||
-                        string.IsNullOrWhiteSpace(accelZText) ||
-                        string.IsNullOrWhiteSpace(weightText) ||
-                        string.IsNullOrWhiteSpace(altitudeText) ||
-                        string.IsNullOrWhiteSpace(pitchText) ||
-                        string.IsNullOrWhiteSpace(bankText) ||
-                        string.IsNullOrWhiteSpace(checksumText))
-                    {
-                        return false;
-                    }
+					// Validate no empty fields to prevent parsing errors
+					if (string.IsNullOrWhiteSpace(accelXText) ||
+						string.IsNullOrWhiteSpace(accelYText) ||
+						string.IsNullOrWhiteSpace(accelZText) ||
+						string.IsNullOrWhiteSpace(weightText) ||
+						string.IsNullOrWhiteSpace(altitudeText) ||
+						string.IsNullOrWhiteSpace(pitchText) ||
+						string.IsNullOrWhiteSpace(bankText) ||
+						string.IsNullOrWhiteSpace(checksumText))
+					{
+						return false;
+					}
 
-                    // Parse and validate checksum
-                    if (!int.TryParse(checksumText, out int receivedChecksum))
-                        return false;
+					// Parse and validate checksum
+					if (!int.TryParse(checksumText, out int receivedChecksum))
+						return false;
 
-                    // Reconstruct payload for checksum verification (without checksum field)
-                    string payload = $"{tailNumber}|{timestampText}|{accelXText}|{accelYText}|{accelZText}|{weightText}|{altitudeText}|{pitchText}|{bankText}";
-                    int calculatedChecksum = ComputeChecksum(payload);
+					double accelX = double.Parse(accelXText);
+					double accelY = double.Parse(accelYText);
+					double accelZ = double.Parse(accelZText);
+					double weight = double.Parse(weightText);
+					double altitude = double.Parse(altitudeText);
+					double pitch = double.Parse(pitchText);
+					double bank = double.Parse(bankText);
 
-                    // Verify checksum - packet is corrupted if mismatch
-                    if (receivedChecksum != calculatedChecksum)
-                    {
-                        lock (lockObject)
-                        {
-                            // so increment dropped counter here
-                            dropped++;
-                        }
-                        Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
-                        return false;
-                    }
+					int calculatedChecksum = ComputeChecksum(altitude, pitch, bank);
 
-                    // Checksum valid - parse all telemetry values
-                    telemetry = new TelemetryData
-                    {
-                        TailNumber = tailNumber,
-                        Timestamp = DateTime.Parse(timestampText),
-                        AccelX = double.Parse(accelXText),
-                        AccelY = double.Parse(accelYText),
-                        AccelZ = double.Parse(accelZText),
-                        Weight = double.Parse(weightText),
-                        Altitude = double.Parse(altitudeText),
-                        Pitch = double.Parse(pitchText),
-                        Bank = double.Parse(bankText),
-                        Checksum = receivedChecksum
-                    };
+					// Verify checksum - packet is corrupted if mismatch
+					if (receivedChecksum != calculatedChecksum)
+					{
+						lock (lockObject)
+						{
+							// so increment dropped counter here
+							dropped++;
+						}
+						Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
+						return false;
+					}
 
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    lock (lockObject)
-                    {
-                        // increment dropped counter on parse error
-                        dropped++;
-                    }
-                    Console.WriteLine($"Error parsing packet: {ex.Message}");
-                    return false;
-                }
-            }
+					// Checksum valid - parse all telemetry values
+					telemetry = new TelemetryData
+					{
+						TailNumber = tailNumber,
+						Timestamp = DateTime.Parse(timestampText),
+						AccelX = accelX,
+						AccelY = accelY,
+						AccelZ = accelZ,
+						Weight = weight,
+						Altitude = altitude,
+						Pitch = pitch,
+						Bank = bank,
+						Checksum = receivedChecksum
+					};
 
-            /*
-            Method: ComputeChecksum
-            Description: Computes 16-bit checksum matching aircraft transmitter algorithm
-            Parameters: string payload - Packet data without checksum field
-            Returns: int - 16-bit checksum value
-            */
-            private static int ComputeChecksum(string payload)
-            {
-                byte[] bytes = Encoding.ASCII.GetBytes(payload);
-                int sum = 0;
+					return true;
+				}
+				catch (Exception ex)
+				{
+					lock (lockObject)
+					{
+						// increment dropped counter on parse error
+						dropped++;
+					}
+					Console.WriteLine($"Error parsing packet: {ex.Message}");
+					return false;
+				}
+			}
 
-                // Sum all byte values
-                foreach (byte b in bytes)
-                {
-                    sum += b;
-                }
+			/*
+			Method: ComputeChecksum
+			Description: Computes the FDMS checksum from altitude, pitch, and bank
+						 using the specification formula (Altitude + Pitch + Bank) / 3
+						 and truncates the result to a signed integer.
+			Parameters: double altitude - Altitude value from the packet
+						double pitch - Pitch value from the packet
+						double bank - Bank value from the packet
+			Returns: int - Truncated checksum value as a signed integer
+			*/
+			private static int ComputeChecksum(double altitude, double pitch, double bank)
+			{
+				double checksumDouble = (altitude + pitch + bank) / 3.0;
+				return (int)checksumDouble;
+			}
 
-                // Mask to 16 bits
-                return sum & 0xFFFF;
-            }
 
-            /*
+			/*
             Method: RenderingDashbrdComponents()
             Description: Displays packet counter and latest telemetry to console output
             Called by dashboard UI to update display with current packet information
             Parameters: None
             Returns: void
             */
-            public override void RenderingDashbrdComponents()
+			public override void RenderingDashbrdComponents()
             {
                 int currentReceived = 0;
                 TelemetryData currentTelemetry = null;

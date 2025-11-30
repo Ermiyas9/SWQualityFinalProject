@@ -19,6 +19,13 @@ namespace AircraftTransmitter
 			this.tailNumber = tailNumber;
 		}
 
+		/// <summary>
+		/// Builds a telemetry packet from a raw CSV telemetry line,
+		/// formatting the fields into the FDMS payload and appending
+		/// a checksum based on altitude, pitch, and bank.
+		/// </summary>
+		/// <param name="rawLine">Raw telemetry line from the aircraft CSV file.</param>
+		/// <returns>ASCII-encoded packet bytes ready to be sent over TCP.</returns>
 		public byte[] BuildPacket(string rawLine)
 		{
 			string[] parts = rawLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -31,26 +38,26 @@ namespace AircraftTransmitter
 			string normalizedTimestamp = timestampText.Replace('_', ' ');
 			DateTime timestamp = DateTime.Parse(normalizedTimestamp, CultureInfo.InvariantCulture);
 
-			double field1 = double.Parse(parts[1], CultureInfo.InvariantCulture);
-			double field2 = double.Parse(parts[2], CultureInfo.InvariantCulture);
-			double field3 = double.Parse(parts[3], CultureInfo.InvariantCulture);
-			double field4 = double.Parse(parts[4], CultureInfo.InvariantCulture);
-			double field5 = double.Parse(parts[5], CultureInfo.InvariantCulture);
-			double field6 = double.Parse(parts[6], CultureInfo.InvariantCulture);
-			double field7 = double.Parse(parts[7], CultureInfo.InvariantCulture);
+			double accelX = double.Parse(parts[1], CultureInfo.InvariantCulture);
+			double accelY = double.Parse(parts[2], CultureInfo.InvariantCulture);
+			double accelZ = double.Parse(parts[3], CultureInfo.InvariantCulture);
+			double weight = double.Parse(parts[4], CultureInfo.InvariantCulture);
+			double altitude = double.Parse(parts[5], CultureInfo.InvariantCulture);
+			double pitch = double.Parse(parts[6], CultureInfo.InvariantCulture);
+			double bank = double.Parse(parts[7], CultureInfo.InvariantCulture);
 
 			string payload =
 				$"{tailNumber}|" +
 				$"{timestamp:O}|" +
-				$"{field1.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field2.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field3.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field4.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field5.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field6.ToString(CultureInfo.InvariantCulture)}|" +
-				$"{field7.ToString(CultureInfo.InvariantCulture)}";
+				$"{accelX.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{accelY.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{accelZ.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{weight.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{altitude.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{pitch.ToString(CultureInfo.InvariantCulture)}|" +
+				$"{bank.ToString(CultureInfo.InvariantCulture)}";
 
-			int checksum = ComputeChecksum(payload);
+			int checksum = ComputeChecksum(altitude, pitch, bank);
 
 			string packetLine = $"{payload}|{checksum}";
 			string packetWithNewline = packetLine + "\n";
@@ -58,17 +65,19 @@ namespace AircraftTransmitter
 			return Encoding.ASCII.GetBytes(packetWithNewline);
 		}
 
-		private static int ComputeChecksum(string payload)
+		/// <summary>
+		/// Computes the packet checksum from altitude, pitch, and bank
+		/// using the FDMS specification formula (Alt + Pitch + Bank) / 3,
+		/// with truncation to a signed integer.
+		/// </summary>
+		/// <param name="altitude">Altitude value from the telemetry record.</param>
+		/// <param name="pitch">Pitch value from the telemetry record.</param>
+		/// <param name="bank">Bank value from the telemetry record.</param>
+		/// <returns>Checksum as a signed integer.</returns>
+		private static int ComputeChecksum(double altitude, double pitch, double bank)
 		{
-			byte[] bytes = Encoding.ASCII.GetBytes(payload);
-			int sum = 0;
-
-			foreach (byte b in bytes)
-			{
-				sum += b;
-			}
-
-			return sum & 0xFFFF;
+			double checksumDouble = (altitude + pitch + bank) / 3.0;
+			return (int)checksumDouble;
 		}
 	}
 }
