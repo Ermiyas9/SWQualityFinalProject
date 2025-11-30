@@ -13,10 +13,12 @@ namespace AircraftTransmitter
 	public class PacketBuilder
 	{
 		private readonly string tailNumber;
+		private uint sequenceNumber;
 
 		public PacketBuilder(string tailNumber)
 		{
 			this.tailNumber = tailNumber;
+			this.sequenceNumber = 0;
 		}
 
 		/// <summary>
@@ -46,8 +48,11 @@ namespace AircraftTransmitter
 			double pitch = double.Parse(parts[6], CultureInfo.InvariantCulture);
 			double bank = double.Parse(parts[7], CultureInfo.InvariantCulture);
 
+			uint currentSequence = sequenceNumber++;
+
 			string payload =
 				$"{tailNumber}|" +
+				$"{currentSequence}|" +
 				$"{timestamp:O}|" +
 				$"{accelX.ToString(CultureInfo.InvariantCulture)}|" +
 				$"{accelY.ToString(CultureInfo.InvariantCulture)}|" +

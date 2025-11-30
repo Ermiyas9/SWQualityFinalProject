@@ -704,23 +704,24 @@ namespace GroundTerminalApp
 				// Split packet by pipe delimiter
 				string[] parts = packetLine.Split('|');
 
-				// Packet must have exactly 10 fields (9 data + 1 checksum)
-				if (parts.Length != 10)
+				// Packet must have exactly 11 fields (tail + seq + 8 data + 1 checksum)
+				if (parts.Length != 11)
 					return false;
 
 				try
 				{
 					// Extract all fields from packet
 					string tailNumber = parts[0];
-					string timestampText = parts[1];
-					string accelXText = parts[2];
-					string accelYText = parts[3];
-					string accelZText = parts[4];
-					string weightText = parts[5];
-					string altitudeText = parts[6];
-					string pitchText = parts[7];
-					string bankText = parts[8];
-					string checksumText = parts[9];
+					string sequenceText = parts[1];
+					string timestampText = parts[2];
+					string accelXText = parts[3];
+					string accelYText = parts[4];
+					string accelZText = parts[5];
+					string weightText = parts[6];
+					string altitudeText = parts[7];
+					string pitchText = parts[8];
+					string bankText = parts[9];
+					string checksumText = parts[10];
 
 					// Validate no empty fields to prevent parsing errors
 					if (string.IsNullOrWhiteSpace(accelXText) ||
@@ -735,17 +736,22 @@ namespace GroundTerminalApp
 						return false;
 					}
 
+					if (!uint.TryParse(sequenceText, out uint sequenceNumber))
+						return false;
+
 					// Parse and validate checksum
 					if (!int.TryParse(checksumText, out int receivedChecksum))
 						return false;
 
-					double accelX = double.Parse(accelXText);
-					double accelY = double.Parse(accelYText);
-					double accelZ = double.Parse(accelZText);
-					double weight = double.Parse(weightText);
-					double altitude = double.Parse(altitudeText);
-					double pitch = double.Parse(pitchText);
-					double bank = double.Parse(bankText);
+					var culture = System.Globalization.CultureInfo.InvariantCulture;
+
+					double accelX = double.Parse(accelXText, culture);
+					double accelY = double.Parse(accelYText, culture);
+					double accelZ = double.Parse(accelZText, culture);
+					double weight = double.Parse(weightText, culture);
+					double altitude = double.Parse(altitudeText, culture);
+					double pitch = double.Parse(pitchText, culture);
+					double bank = double.Parse(bankText, culture);
 
 					int calculatedChecksum = ComputeChecksum(altitude, pitch, bank);
 
@@ -765,7 +771,8 @@ namespace GroundTerminalApp
 					telemetry = new TelemetryData
 					{
 						TailNumber = tailNumber,
-						Timestamp = DateTime.Parse(timestampText),
+						SequenceNumber = sequenceNumber,
+						Timestamp = DateTime.Parse(timestampText, culture, System.Globalization.DateTimeStyles.RoundtripKind),
 						AccelX = accelX,
 						AccelY = accelY,
 						AccelZ = accelZ,
@@ -849,7 +856,8 @@ namespace GroundTerminalApp
         public class TelemetryData
         {
             public string TailNumber { get; set; }      // Aircraft identifier
-            public DateTime Timestamp { get; set; }     // UTC recording time
+			public uint SequenceNumber { get; set; }    // Packet sequence number
+			public DateTime Timestamp { get; set; }     // UTC recording time
             public double AccelX { get; set; }          // X-axis acceleration (G-force)
             public double AccelY { get; set; }          // Y-axis acceleration (G-force)
             public double AccelZ { get; set; }          // Z-axis acceleration (G-force)
