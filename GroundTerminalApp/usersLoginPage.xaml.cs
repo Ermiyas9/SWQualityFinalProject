@@ -1,4 +1,14 @@
-﻿using System;
+﻿/* ======================================================================================================================== */
+/* FILE             : usersLoginPage.xaml.cs                                                                                */
+/* PROJECT          : Software Quality Final Project Milestone 2                                                            */
+/* NAMESPACE        : GroundTerminalApp                                                                                    */
+/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje’- Antoine Rose                      */
+/* FIRST VERSION    : 2025-11-22                                                                                            */
+/* DESCRIPTION      : Defines the UsersLoginPage window that authenticates users and gates access to FDMS features.        */
+/* ======================================================================================================================== */
+
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
