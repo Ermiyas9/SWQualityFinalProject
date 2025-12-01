@@ -1,4 +1,15 @@
-﻿using System;
+﻿/* ======================================================================================================================== */
+/* FILE             : FDMSDashboard.xaml.cs                                                                                 */
+/* PROJECT          : Software Quality Final Project Milestone 2                                                            */
+/* NAMESPACE        : GroundTerminalApp                                                                                     */
+/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje’- Antoine Rose                      */
+/* FIRST VERSION    : 2025-11-22                                                                                            */
+/* DESCRIPTION      : Defines the FDMSDashboard WPF window, which acts as the main ground terminal UI. It hosts TCP        */
+/*                    server logic, packet parsing and checksum validation, live telemetry visualization, and system logs.  */
+/* ======================================================================================================================== */
+
+
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -28,10 +39,6 @@ using WFSeries = System.Windows.Forms.DataVisualization.Charting.Series;
 using WFSeriesChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType;
 
 
-
-
-
-
 namespace GroundTerminalApp
 {
     /// <summary>
@@ -45,9 +52,11 @@ namespace GroundTerminalApp
         private TheCounterComponent packetCounter;
         private const int DefaultListenPort = 5000; // default port if it's not set in config
         private int listenPort;
-        
 
-        public FDMSDashboard()
+		/// <summary>
+		/// Initializes the FDMS dashboard UI, logging components, chart, counters, and TCP server.
+		/// </summary>
+		public FDMSDashboard()
         {
             InitializeComponent();
 
@@ -96,6 +105,11 @@ namespace GroundTerminalApp
         // a time class to track the stream online status with time so if its not send for a while we can apply that change to the UI
         private DispatcherTimer streamStatusTimer;
 
+        /// <summary>
+        /// Handles the click event for the "Search and Query" button.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
         {
             SearchingPageApp searchPage = new SearchingPageApp(this);
@@ -103,6 +117,11 @@ namespace GroundTerminalApp
             searchPage.Show();
         }
 
+        /// <summary>
+        /// Handles the click event for the "System Logs" button.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
         {
             logsPage logsPage = new logsPage(this);
@@ -110,6 +129,11 @@ namespace GroundTerminalApp
             logsPage.Show();
         }
 
+        /// <summary>
+        /// Handles the click event for the "Login Page" button.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void BtnLoginPage_Click(object sender, RoutedEventArgs e)
         {
             UsersLoginPage loginPage = new UsersLoginPage();
@@ -117,9 +141,10 @@ namespace GroundTerminalApp
             loginPage.Show();
         }
 
-
-        // updating the dashboard UI (packet counter section) from the packet counter
-        private void UpdateDashboardFromCounter()
+		/// <summary>
+		/// Updates dashboard labels and charts using the latest telemetry and packet counters.
+		/// </summary>
+		private void UpdateDashboardFromCounter()
         {
             TelemetryData telemetry = packetCounter.LastTelemetry;
             int receivedCount = packetCounter.Received;
@@ -166,7 +191,10 @@ namespace GroundTerminalApp
             UpdatingTheStatusOfStream();
         }
 
-        private void UpdatingTheStatusOfStream()
+		/// <summary>
+		/// Checks the last telemetry update time and refreshes the stream online/offline status indicators.
+		/// </summary>
+		private void UpdatingTheStatusOfStream()
         {
             bool streamOnline = false;
 
@@ -204,9 +232,11 @@ namespace GroundTerminalApp
 
         }
 
-
-        // I am creating this Method to store the packets like pitch tail number and so on so this table will store those values into database table
-        private void SaveGroundTerminalPacketsToDB(TelemetryData telemetry)
+		/// <summary>
+		/// Saves the latest telemetry packet into the AircraftTransmitterPackets table.
+		/// </summary>
+		/// <param name="telemetry">The telemetry data object to be stored in the database.</param>
+		private void SaveGroundTerminalPacketsToDB(TelemetryData telemetry)
         {
             try
             {
@@ -243,7 +273,12 @@ namespace GroundTerminalApp
 			}
 		}
 
-		// write system log to database
+		/// <summary>
+		/// Inserts a single row into the SystemLogs table for application and TCP server events.
+		/// </summary>
+		/// <param name="level">The severity level of the log entry (for example, INFO or ERROR).</param>
+		/// <param name="source">The logical source of the log entry, such as a class or method name.</param>
+		/// <param name="message">The descriptive log message to record.</param>
 		private void WriteSystemLog(string level, string source, string message)
 		{
 			try
@@ -286,8 +321,9 @@ namespace GroundTerminalApp
 			}
 		}
 
-
-		// starting the tcp server
+		/// <summary>
+		/// Reads the listen port from configuration, starts the TCP listener, and begins accepting clients.
+		/// </summary>
 		private void StartTcpServer()
         {
             listenerCancellation = new CancellationTokenSource();
@@ -311,8 +347,10 @@ namespace GroundTerminalApp
 			Task acceptTask = AcceptClients(listenerCancellation.Token);
         }
 
-        // stopping the tcp server
-        private void StopTcpServer()
+		/// <summary>
+		/// Stops the TCP listener and cancels the accept loop, logging any shutdown errors.
+		/// </summary>
+		private void StopTcpServer()
         {
             try
             {
@@ -336,8 +374,12 @@ namespace GroundTerminalApp
 			}
 		}
 
-        // accepting clients
-        private async Task AcceptClients(CancellationToken token)
+		/// <summary>
+		/// Asynchronously accepts incoming TCP clients and dispatches each to a handler task.
+		/// </summary>
+		/// <param name="token">A cancellation token used to stop accepting new clients.</param>
+		/// <returns>A task that represents the asynchronous accept loop operation.</returns>
+		private async Task AcceptClients(CancellationToken token)
         {
             try
             {
@@ -359,8 +401,13 @@ namespace GroundTerminalApp
 		}
 
 
-        // handling clients by reading packets and processing them
-        private async Task HandleClient(TcpClient client, CancellationToken token)
+		/// <summary>
+		/// Reads framed packets from the TCP client stream, updates counters, and processes telemetry.
+		/// </summary>
+		/// <param name="client">The connected TCP client providing telemetry data.</param>
+		/// <param name="token">A cancellation token used to stop processing the client.</param>
+		/// <returns>A task that represents the asynchronous client handling operation.</returns>
+		private async Task HandleClient(TcpClient client, CancellationToken token)
         {
             using (client)
             {
@@ -412,8 +459,16 @@ namespace GroundTerminalApp
             }
         }
 
-        // reading exact number of bytes from the network stream
-        private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
+		/// <summary>
+		/// Reads the requested number of bytes from a network stream into the buffer.
+		/// </summary>
+		/// <param name="stream">The network stream to read from.</param>
+		/// <param name="buffer">The byte buffer used to store the incoming data.</param>
+		/// <param name="offset">The starting index in the buffer where data should be written.</param>
+		/// <param name="count">The total number of bytes expected to be read.</param>
+		/// <param name="token">A cancellation token used to cancel the read operation.</param>
+		/// <returns>The total number of bytes actually read from the stream.</returns>
+		private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
         {
             int totalRead = 0;
 
@@ -432,7 +487,10 @@ namespace GroundTerminalApp
             return totalRead;
         }
 
-        private void LineChartSetupAndDisplay()
+		/// <summary>
+		/// Configures the altitude-vs-time line chart area, axes, colors, and series definition.
+		/// </summary>
+		private void LineChartSetupAndDisplay()
         {
             // add the chart area once 
             if (lineChartAlltVsTime.ChartAreas.Count == 0)
@@ -483,8 +541,11 @@ namespace GroundTerminalApp
             }
         }
 
- 
-        private void UpdateLineChart(TelemetryData telemetry)
+		/// <summary>
+		/// Appends a new altitude data point to the line chart and trims old points if needed.
+		/// </summary>
+		/// <param name="telemetry">The telemetry sample providing timestamp and altitude.</param>
+		private void UpdateLineChart(TelemetryData telemetry)
         {
             // the chart works only when we recieve data 
             if (telemetry == null) return;
@@ -502,12 +563,10 @@ namespace GroundTerminalApp
                 seriesForAttitude.Points.RemoveAt(0);
         }
 
-
-
-
-
-        // we need a base class for the dash board components here and with one render method
-        public class DashBoardComponents
+		/// <summary>
+		/// Provides a base virtual render method for dashboard components.
+		/// </summary>
+		public class DashBoardComponents
         {
 
 
@@ -518,9 +577,10 @@ namespace GroundTerminalApp
             }
         }
 
-
-        // the second class i am thinking is the child class of the component for example if we need to display chart  
-        public class ChartDisplay : DashBoardComponents
+		/// <summary>
+		/// Renders chart-related dashboard content, such as titles and data points.
+		/// </summary>
+		public class ChartDisplay : DashBoardComponents
         {
             public override void RenderingDashbrdComponents()
             {
@@ -528,8 +588,10 @@ namespace GroundTerminalApp
             }
         }
 
-        // this class is for status of the connection
-        public class ConnectionStatus : DashBoardComponents
+		/// <summary>
+		/// Renders the current connection status label as connected or disconnected.
+		/// </summary>
+		public class ConnectionStatus : DashBoardComponents
         {
             public bool IsConnected { get; set; }
 
@@ -540,13 +602,10 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Class: TheCounterComponent
-        Description: Receives TCP packets, validates checksums, parses telemetry data
-        Inherits: DashBoardComponents
-        Purpose: Counter display and packet deconstruction for ground terminal
-        */
-        public class TheCounterComponent : DashBoardComponents
+		/// <summary>
+		/// Initializes packet counters, dropped packet tracking, and telemetry storage.
+		/// </summary>
+		public class TheCounterComponent : DashBoardComponents
         {
             private int received;
             private int sent;
@@ -615,11 +674,11 @@ namespace GroundTerminalApp
                 }
             }
 
-            /*
-            Property: LastTelemetry
-            Description: Gets the most recently received and validated telemetry packet
-            Returns: TelemetryData object or null if no packets received yet
-            */
+            /// <summary>
+            /// Gets the most recent telemetry data received.
+            /// </summary>
+            /// <remarks>Access to this property is thread-safe. The returned value reflects the state
+            /// of the telemetry data at the time of access.</remarks>
             public TelemetryData LastTelemetry
             {
                 get
@@ -631,13 +690,12 @@ namespace GroundTerminalApp
                 }
             }
 
-
-
-
-            /*
-            Method: TheCounterComponent() [Constructor]
-            Description: Initializes packet counters and telemetry storage
-            */
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TheCounterComponent"/> class.
+            /// </summary>
+            /// <remarks>This constructor initializes the component with default values.  The counters
+            /// for received, sent, and dropped packets are set to zero,  and the last telemetry data is initialized to
+            /// null.</remarks>
             public TheCounterComponent()
             {
                 received = 0;
@@ -647,12 +705,16 @@ namespace GroundTerminalApp
                 lastTelemetry = null;
             }
 
-            /*
-            Method: ProcessPacket
-            Description: Receives raw TCP packet bytes, validates and parses telemetry
-            Parameters: byte[] packetData - Raw bytes from TCP network stream
-            Returns: bool - True if packet valid and processed, false if validation failed
-            */
+            /// <summary>
+            /// Processes a telemetry packet and updates the internal state with the extracted data.
+            /// </summary>
+            /// <remarks>This method attempts to parse the provided packet data, validate its
+            /// checksum, and extract telemetry information. If successful, the extracted telemetry data is stored, and
+            /// the internal counters and timestamp are updated. <para> Thread safety is ensured by locking during
+            /// updates to shared state. </para></remarks>
+            /// <param name="packetData">The raw packet data as a byte array. Must not be null.</param>
+            /// <returns><see langword="true"/> if the packet was successfully processed and the telemetry data was updated;
+            /// otherwise, <see langword="false"/> if the packet is invalid or processing fails.</returns>
             public bool ProcessPacket(byte[] packetData)
             {
                 try
@@ -687,16 +749,12 @@ namespace GroundTerminalApp
                 }
             }
 
-			/*
-			Method: DeconstructPacket
-			Description: Parses a single FDMS packet, validates the checksum using
-						 the (Altitude + Pitch + Bank) / 3 specification, and
-						 constructs a TelemetryData object when the packet is valid.
-			Parameters: string packetLine - Complete packet line including checksum
-						out TelemetryData telemetry - Parsed telemetry output on success
-			Returns: bool - True if the packet is valid and telemetry was created,
-							false if checksum or parsing fails
-			*/
+			/// <summary>
+			/// Parses a delimited packet string into a TelemetryData object and validates fields.
+			/// </summary>
+			/// <param name="packetLine">The raw packet string containing delimited telemetry values.</param>
+			/// <param name="telemetry">When this method returns, holds the parsed telemetry data if successful.</param>
+			/// <returns>True if the packet string is valid and parsed; otherwise, false.</returns>
 			private bool DeconstructPacket(string packetLine, out TelemetryData telemetry)
 			{
 				telemetry = null;
@@ -797,30 +855,22 @@ namespace GroundTerminalApp
 				}
 			}
 
-			/*
-			Method: ComputeChecksum
-			Description: Computes the FDMS checksum from altitude, pitch, and bank
-						 using the specification formula (Altitude + Pitch + Bank) / 3
-						 and truncates the result to a signed integer.
-			Parameters: double altitude - Altitude value from the packet
-						double pitch - Pitch value from the packet
-						double bank - Bank value from the packet
-			Returns: int - Truncated checksum value as a signed integer
-			*/
+			/// <summary>
+			/// Computes the integer checksum using the altitude, pitch, and bank values.
+			/// </summary>
+			/// <param name="altitude">The altitude component used in the checksum calculation.</param>
+			/// <param name="pitch">The pitch component used in the checksum calculation.</param>
+			/// <param name="bank">The bank component used in the checksum calculation.</param>
+			/// <returns>The checksum value as an integer.</returns>
 			private static int ComputeChecksum(double altitude, double pitch, double bank)
 			{
 				double checksumDouble = (altitude + pitch + bank) / 3.0;
 				return (int)checksumDouble;
 			}
 
-
-			/*
-            Method: RenderingDashbrdComponents()
-            Description: Displays packet counter and latest telemetry to console output
-            Called by dashboard UI to update display with current packet information
-            Parameters: None
-            Returns: void
-            */
+			/// <summary>
+			/// Writes packet counts and the latest telemetry summary to the console for debugging.
+			/// </summary>
 			public override void RenderingDashbrdComponents()
             {
                 int currentReceived = 0;
@@ -844,15 +894,11 @@ namespace GroundTerminalApp
             }
         }
 
-        // this list is to store the live values so i can pass it to other windows 
+        /// <summary>
+        /// Gets the collection of telemetry data entries.
+        /// </summary>
         public List<TelemetryData> telemetryDataList { get; private set; } = new List<TelemetryData>(); 
 
-        /*
-        Class: TelemetryData
-        Description: Data transfer object for parsed aircraft telemetry from single packet
-        Properties correspond to FDMS packet format fields
-        Used to communicate between network layer and UI display components
-        */
         public class TelemetryData
         {
             public string TailNumber { get; set; }      // Aircraft identifier
@@ -882,8 +928,11 @@ namespace GroundTerminalApp
             // this method is to store the connection string from config file
             private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["SoftwareQualityFinalProject"]?.ConnectionString;
 
-            // another  method to create and return a new SqlConnection when ever we need too 
-            public static SqlConnection GetConnection()
+			/// <summary>
+			/// Creates and returns a new SQL connection using the configured connection string.
+			/// </summary>
+			/// <returns>A new SqlConnection instance for the FDMS database.</returns>
+			public static SqlConnection GetConnection()
             {
                 return new SqlConnection(ConnectionString);
             }

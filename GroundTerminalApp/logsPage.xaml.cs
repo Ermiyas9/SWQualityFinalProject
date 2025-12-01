@@ -1,4 +1,14 @@
-﻿using System;
+﻿/* ======================================================================================================================== */
+/* FILE             : logsPage.xaml.cs                                                                                      */
+/* PROJECT          : Software Quality Final Project Milestone 2                                                            */
+/* NAMESPACE        : GroundTerminalApp                                                                                    */
+/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje’- Antoine Rose                      */
+/* FIRST VERSION    : 2025-11-22                                                                                            */
+/* DESCRIPTION      : Defines the logsPage window used to view, filter, and manage FDMS system logs from SQL Server.       */
+/* ======================================================================================================================== */
+
+
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
@@ -29,14 +39,11 @@ namespace GroundTerminalApp
         FDMSDashboard dashboard;
 
 
-        /*
-        Method: logsPage (Constructor)
-        Description: Initializes the log viewer window, prepares data collections,
-             wires UI event handlers, and starts background timers for
-             log auto-refresh and database connection monitoring.
-        */
-
-        public logsPage(FDMSDashboard dashboardInstance)
+		/// <summary>
+		/// Initializes the logsPage window, data collections, event handlers, and timers.
+		/// </summary>
+		/// <param name="dashboardInstance">Reference to the main FDMS dashboard window.</param>
+		public logsPage(FDMSDashboard dashboardInstance)
         {
             InitializeComponent();
             InitializeData();
@@ -48,13 +55,10 @@ namespace GroundTerminalApp
             searchingPage = searchingPageInstance;
             dashboard = dashboardInstance;
         }
-        /*
-        Method: InitializeData
-        Description: Creates observable collections that store log entries and their
-                     filtered view. Binds the DataGrid to the filtered collection.
-        Purpose: Prepares in-memory data sources for UI binding.
-        */
 
+        /// <summary>
+        /// Initializes the data collections and sets up the data binding for the log entries.
+        /// </summary>
         private void InitializeData()
         {
             logEntries = new ObservableCollection<LogEntry>();
@@ -63,15 +67,11 @@ namespace GroundTerminalApp
 
             searchingPage = searchingPageInstance;
         }
-        /*
-        Method: SetupEventHandlers
-        Description: Attaches UI event handlers for search, log-level filtering, and
-                     button actions. Dynamically locates buttons by content to avoid
-                     XAML coupling.
-        Purpose: Ensures interactive UI components trigger logic correctly.
-        */
 
-        private void SetupEventHandlers()
+		/// <summary>
+		/// Wires up UI event handlers for search, log-level filters, and toolbar buttons.
+		/// </summary>
+		private void SetupEventHandlers()
         {
             TxtSearch.TextChanged += TxtSearch_TextChanged;
             CmbLogLevel.SelectionChanged += CmbLogLevel_SelectionChanged;
@@ -92,14 +92,11 @@ namespace GroundTerminalApp
             if (userBtn != null)
                 userBtn.Click += NavigateToUser;
         }
-        /*
-        Method: InitializeTimers
-        Description: Creates and starts DispatcherTimers for periodic log refreshing
-                     and database health checks. Also triggers an immediate initial load.
-        Purpose: Enables automatic UI updates and real-time DB connection monitoring.
-        */
 
-        private void InitializeTimers()
+        /// <summary>
+        /// Initializes and starts the timers used for periodic database operations.
+        /// </summary>
+		private void InitializeTimers()
         {
             refreshTimer = new DispatcherTimer
             {
@@ -123,15 +120,11 @@ namespace GroundTerminalApp
             });
         }
 
-        /*
-        Method: CheckDatabaseConnection
-        Description: Verifies connectivity to the FDMS SQL database by opening a test
-                     connection. Updates UI indicators and logs local errors on failure.
-        Returns: bool - true if connection succeeded, otherwise false.
-        Purpose: Maintains real-time connection status for user visibility.
-        */
-
-        private async Task<bool> CheckDatabaseConnection()
+		/// <summary>
+		/// Tests the SQL database connection, updates the connection status UI, and logs any errors.
+		/// </summary>
+		/// <returns>True if the database connection succeeds; otherwise, false.</returns>
+		private async Task<bool> CheckDatabaseConnection()
         {
             try
             {
@@ -171,16 +164,11 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: LoadLogsFromDatabase
-        Description: Retrieves the latest 1000 log records from the SystemLogs table,
-                     rebuilds the internal log collection, and reapplies UI filters.
-        Async: Runs database operations on a background thread and marshals results
-               back to the UI.
-        Purpose: Populates and refreshes log data displayed to the user.
-        */
-
-        private async Task LoadLogsFromDatabase()
+		/// <summary>
+		/// Asynchronously loads the latest system logs from the database and refreshes the bound collections.
+		/// </summary>
+		/// <returns>A task that represents the asynchronous log loading operation.</returns>
+		private async Task LoadLogsFromDatabase()
         {
             if (!isConnected)
             {
@@ -252,15 +240,10 @@ namespace GroundTerminalApp
             }
         }
 
-
-        /*
-        Method: ApplyFilters
-        Description: Applies UI-selected log level and text search filters to the
-                     in-memory log collection and updates the visible filtered list.
-        Purpose: Provides fast client-side filtering without extra DB calls.
-        */
-
-        private void ApplyFilters()
+		/// <summary>
+		/// Applies the selected log level and search text filters to the in-memory log collection.
+		/// </summary>
+		private void ApplyFilters()
         {
             var searchText = TxtSearch.Text.ToLower();
             var selectedLevel = (CmbLogLevel.SelectedItem as ComboBoxItem)?.Content.ToString();
@@ -288,44 +271,42 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: TxtSearch_TextChanged
-        Description: Triggers log filtering whenever the search textbox content changes.
-        Purpose: Enables live search functionality.
-        */
-
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+		/// <summary>
+		/// Handles changes to the search textbox and reapplies log filters in real time.
+		/// </summary>
+		/// <param name="sender">The source text box that triggered the event.</param>
+		/// <param name="e">The event data associated with the text change.</param>
+		private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             ApplyFilters();
         }
 
-        /*
-        Method: CmbLogLevel_SelectionChanged
-        Description: Reapplies filters when user changes the selected log level.
-        Purpose: Dynamically updates the displayed log severity.
-        */
-        private void CmbLogLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		/// <summary>
+		/// Handles log-level selection changes and updates the visible log entries.
+		/// </summary>
+		/// <param name="sender">The combo box that triggered the event.</param>
+		/// <param name="e">The event data describing the selection change.</param>
+		private void CmbLogLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyFilters();
         }
 
-        /*
-        Method: RefreshButton_Click
-        Description: Manually triggers a log reload from the database.
-        Purpose: Allows user to force refresh outside the auto-refresh interval.
-        */
-        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Handles the Refresh button click and forces a manual reload of system logs from the database.
+		/// </summary>
+		/// <param name="sender">The Refresh button that was clicked.</param>
+		/// <param name="e">The routed event data for the click event.</param>
+		private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             await LoadLogsFromDatabase();
         }
 
-        /*
-        Method: ClearLogsButton_Click
-        Description: Displays a confirmation dialog and initiates log clearing when 
-                     the user approves.
-        Purpose: Protects against accidental deletion of log history.
-        */
-        private async void ClearLogsButton_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Handles the Clear Logs button click and confirms whether the user wants to clear all logs.
+		/// </summary>
+		/// <param name="sender">The Clear Logs button that was clicked.</param>
+		/// <param name="e">The routed event data for the click event.</param>
+		private async void ClearLogsButton_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
                 "Are you sure you want to clear all logs? This action cannot be undone.",
@@ -339,13 +320,11 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: ClearLogsFromDatabase
-        Description: Archives all current logs into SystemLogsArchive, deletes them
-                     from SystemLogs, and then reloads UI data.
-        Purpose: Performs safe log cleanup while preserving long-term history.
-        */
-        private async Task ClearLogsFromDatabase()
+		/// <summary>
+		/// Archives current system logs, deletes them from the active table, and reloads the UI.
+		/// </summary>
+		/// <returns>A task that represents the asynchronous log clearing operation.</returns>
+		private async Task ClearLogsFromDatabase()
         {
             try
             {
@@ -390,12 +369,12 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: LogError
-        Description: Writes errors to a local text file fallback logger.
-        Purpose: Provides diagnostic logging when DB logging is unavailable.
-        */
-        private void LogError(string source, string message)
+		/// <summary>
+		/// Writes an error entry to a local fallback text file when database logging is unavailable.
+		/// </summary>
+		/// <param name="source">A short identifier describing where the error occurred.</param>
+		/// <param name="message">The detailed error message to record.</param>
+		private void LogError(string source, string message)
         {
             try
             {
@@ -409,13 +388,12 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: NavigateToSearchQuery
-        Description: Stops timers, navigates to the Search & Query page, and closes
-                     the current window. Restarts timers if navigation fails.
-        Purpose: Ensures clean window transitions without leaked timers.
-        */
-        private void NavigateToSearchQuery(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Stops timers, opens the Search &amp; Query window, and closes the current logsPage instance.
+		/// </summary>
+		/// <param name="sender">The control that initiated the navigation.</param>
+		/// <param name="e">The routed event data for the click event.</param>
+		private void NavigateToSearchQuery(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -443,13 +421,12 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: NavigateToUser
-        Description: Navigates to the User/Login page while performing cleanup of
-                     active timers. Handles navigation exceptions safely.
-        Purpose: Supports page transitions within the Ground Terminal UI.
-        */
-        private void NavigateToUser(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Stops timers, opens the user login window, and closes the current logsPage instance.
+		/// </summary>
+		/// <param name="sender">The control that initiated the navigation.</param>
+		/// <param name="e">The routed event data for the click event.</param>
+		private void NavigateToUser(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -477,13 +454,11 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: NavigateToPage
-        Description: Generic navigation helper that stops timers, opens a target window,
-                     and closes the current one. Includes error fallback behavior.
-        Purpose: Centralizes window transition logic to reduce repetition.
-        */
-        private void NavigateToPage(Window targetPage)
+		/// <summary>
+		/// Performs generic navigation by stopping timers, showing the target window, and closing logsPage.
+		/// </summary>
+		/// <param name="targetPage">The destination window to display.</param>
+		private void NavigateToPage(Window targetPage)
         {
             try
             {
@@ -511,13 +486,12 @@ namespace GroundTerminalApp
             }
         }
 
-        /*
-        Method: FindButtonByContent
-        Description: Searches the logical UI tree for a Button with the specified content.
-        Returns: Button - first match or null.
-        Purpose: Decouples button lookup from XAML structure; supports dynamic layouts.
-        */
-        private Button FindButtonByContent(string content)
+		/// <summary>
+		/// Searches the logical UI tree for a button whose Content matches the specified text.
+		/// </summary>
+		/// <param name="content">The button content text to search for.</param>
+		/// <returns>The first matching Button instance, or null if none is found.</returns>
+		private Button FindButtonByContent(string content)
         {
             return LogicalTreeHelper.GetChildren(this)
                 .OfType<Grid>()
@@ -526,13 +500,11 @@ namespace GroundTerminalApp
                 .FirstOrDefault(b => b.Content?.ToString() == content);
         }
 
-        /*
-        Method: OnClosing
-        Description: Stops active timers before the window closes to prevent memory leaks
-                     and orphaned background threads.
-        Purpose: Ensures proper resource cleanup on exit.
-        */
-        protected override void OnClosing(CancelEventArgs e)
+		/// <summary>
+		/// Stops active timers before the window closes to avoid background activity and memory leaks.
+		/// </summary>
+		/// <param name="e">Event data that can cancel the closing operation.</param>
+		protected override void OnClosing(CancelEventArgs e)
         {
             refreshTimer?.Stop();
             connectionCheckTimer?.Stop();
@@ -540,13 +512,11 @@ namespace GroundTerminalApp
         }
     }
 
-    /*
-    Class: LogEntry
-    Description: Data model representing a single log record. Implements
-                 INotifyPropertyChanged for WPF data binding.
-    Purpose: Used as the row data structure in the Logs DataGrid.
-    */
-    public class LogEntry : INotifyPropertyChanged
+	/// <summary>
+	/// Raises the PropertyChanged event for the given property to update WPF bindings.
+	/// </summary>
+	/// <param name="propertyName">The name of the property that changed.</param>
+	public class LogEntry : INotifyPropertyChanged
     {
         private DateTime timestamp;
         private string level;
