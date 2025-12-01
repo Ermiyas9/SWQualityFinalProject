@@ -14,6 +14,8 @@ internal class Program
 {
 	private static void Main()
 	{
+		// PARSING INFO FROM CONFIG FILES
+		
 		string telemetryFilePath = ConfigurationManager.AppSettings["TelemetryFilePath"];
 		string tailNumber = ConfigurationManager.AppSettings["TailNumber"];
 		string serverIp = ConfigurationManager.AppSettings["ServerIp"];
@@ -38,6 +40,8 @@ internal class Program
 		{
 			throw new InvalidOperationException("There is no valid integer for SendIntervalMs in your App.config.");
 		}
+
+		// starting service
 
 		Console.WriteLine("AircraftTransmitter starting...");
 		Console.WriteLine($"Telemetry file: {telemetryFilePath}");

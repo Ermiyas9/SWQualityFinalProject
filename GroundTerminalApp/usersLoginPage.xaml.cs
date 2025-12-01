@@ -187,92 +187,105 @@ namespace GroundTerminalApp
             TxtPassword.Clear();
         }
 
-		// Authenticates credentials using AppUser table
-		public AuthenticationResult OnLoginAttempt(LoginCredentials credentials)
-		{
-			var result = new AuthenticationResult
-			{
-				IsSuccess = false,
-				Message = "Invalid username or password.",
-				AuthenticatedUser = null
-			};
+        /*
+        Method: OnLoginAttempt
+        Description: Authenticates user credentials against AppUser table
+        Validates account status and retrieves user role and ID for session
+        Parameters: LoginCredentials credentials
+        Returns: AuthenticationResult - Success flag, message, and authenticated user object
+        */
+        public AuthenticationResult OnLoginAttempt(LoginCredentials credentials)
+        {
+            var result = new AuthenticationResult
+            {
+                IsSuccess = false,
+                Message = "Invalid username or password.",
+                AuthenticatedUser = null
+            };
 
-			try
-			{
+            // connecting to server to authenticate user
+            try
+            {
                 SqlConnection conn = ServerConnector.GetConnection();
-				{
-					conn.Open();
+                {
+                    conn.Open();
 
-					string query = @"
-                        SELECT UserId, Username, [Password], RoleId, IsActive
-                        FROM dbo.AppUser
-                        WHERE Username = @Username AND [Password] = @Password;";
+                    string query = @"
+                SELECT UserId, Username, [Password], RoleId, IsActive
+                FROM dbo.AppUser
+                WHERE Username = @Username AND [Password] = @Password;";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
-					{
-						cmd.Parameters.AddWithValue("@Username", credentials.Username);
-						cmd.Parameters.AddWithValue("@Password", credentials.Password);
+                    {
+                        // Parameterize credentials to prevent SQL injection
+                        cmd.Parameters.AddWithValue("@Username", credentials.Username);
+                        cmd.Parameters.AddWithValue("@Password", credentials.Password);
 
                         SqlDataReader reader = cmd.ExecuteReader();
-						{
-							if (reader.Read())
-							{
-								bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-								if (!isActive)
-								{
-									result.IsSuccess = false;
-									result.Message = "Account is disabled.";
-									result.AuthenticatedUser = null;
+                        {
+                            // User found - validate account is active
+                            if (reader.Read())
+                            {
+                                bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
 
-									WriteSystemLog("ERROR", "UsersLoginPage", "Login failed for disabled account '" + credentials.Username + "'.");
+                                // Disabled accounts denied access
+                                if (!isActive)
+                                {
+                                    result.IsSuccess = false;
+                                    result.Message = "Account is disabled.";
+                                    result.AuthenticatedUser = null;
 
-									return result;
-								}
+                                    WriteSystemLog("ERROR", "UsersLoginPage", "Login failed for disabled account '" + credentials.Username + "'.");
 
-								var user = new AppUser
-								{
-									UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-									Username = reader.GetString(reader.GetOrdinal("Username")),
-									RoleId = reader.GetInt32(reader.GetOrdinal("RoleId")),
-									IsActive = isActive
-								};
+                                    return result;
+                                }
 
-								result.IsSuccess = true;
-								result.Message = "Login successful.";
-								result.AuthenticatedUser = user;
+                                // Extract user data for session
+                                var user = new AppUser
+                                {
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Username = reader.GetString(reader.GetOrdinal("Username")),
+                                    RoleId = reader.GetInt32(reader.GetOrdinal("RoleId")),
+                                    IsActive = isActive
+                                };
 
-								WriteSystemLog("INFO", "UsersLoginPage", "User '" + credentials.Username + "' logged in successfully.");
+                                result.IsSuccess = true;
+                                result.Message = "Login successful.";
+                                result.AuthenticatedUser = user;
 
-								return result;
-							}
-						}
-					}
-				}
-			}
-			catch (Exception)
-			{
-				result.IsSuccess = false;
-				result.Message = "Login failed due to database error.";
-				result.AuthenticatedUser = null;
+                                WriteSystemLog("INFO", "UsersLoginPage", "User '" + credentials.Username + "' logged in successfully.");
 
-				WriteSystemLog("ERROR", "UsersLoginPage", "Login failed due to database error.");
+                                return result;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                result.IsSuccess = false;
+                result.Message = "Login failed due to database error.";
+                result.AuthenticatedUser = null;
 
-				return result;
-			}
+                WriteSystemLog("ERROR", "UsersLoginPage", "Login failed due to database error.");
 
-			WriteSystemLog("WARN", "UsersLoginPage", "Invalid login attempt for username '" + credentials.Username + "'.");
-			return result;
-		}
+                return result;
+            }
+
+            // Credentials did not match any active user
+            WriteSystemLog("WARN", "UsersLoginPage", "Invalid login attempt for username '" + credentials.Username + "'.");
+            return result;
+        }
 
 
-		/*
+        /*
         Static Property: CurrentUser
         Description: Stores authenticated user data for application access
         Team members can retrieve user ID and role for authorization
         Usage: CurrentUser?.UserId, CurrentUser?.RoleId
         Cleared on window close for security
         */
-		public static AppUser CurrentUser { get; set; }
+        public static AppUser CurrentUser { get; set; }
 
 		// Inserts one log row into SystemLogs table
 		private void WriteSystemLog(string level, string source, string message)
@@ -312,50 +325,60 @@ namespace GroundTerminalApp
 			}
 		}
 
-		// Updates DB status label and icons
-		private void UpdateDbConnectionStatus(bool isConnected)
-		{
-			if (isConnected)
-			{
-				dbConnectionStatusLbl.Foreground = Brushes.Green;
-				dbConnectionStatusLbl.Content = "ONLINE";
-				dbOnlineIcon.Visibility = Visibility.Visible;
-				dbOfflineIcon.Visibility = Visibility.Collapsed;
-			}
-			else
-			{
-				dbConnectionStatusLbl.Foreground = Brushes.Red;
-				dbConnectionStatusLbl.Content = "OFFLINE";
-				dbOfflineIcon.Visibility = Visibility.Visible;
-				dbOnlineIcon.Visibility = Visibility.Collapsed;
-			}
-		}
+        /*
+        Method: UpdateDbConnectionStatus
+        Description: Updates UI label and icons to reflect database connection state
+        Parameters: bool isConnected
+        Returns: void
+        */
+        private void UpdateDbConnectionStatus(bool isConnected)
+        {
+            if (isConnected)
+            {
+                dbConnectionStatusLbl.Foreground = Brushes.Green;
+                dbConnectionStatusLbl.Content = "ONLINE";
+                dbOnlineIcon.Visibility = Visibility.Visible;
+                dbOfflineIcon.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                dbConnectionStatusLbl.Foreground = Brushes.Red;
+                dbConnectionStatusLbl.Content = "OFFLINE";
+                dbOfflineIcon.Visibility = Visibility.Visible;
+                dbOnlineIcon.Visibility = Visibility.Collapsed;
+            }
+        }
 
-		// Tests DB connection and updates status controls
-		private bool CheckDatabaseConnection()
-		{
-			try
-			{
+        /*
+         Method: CheckDatabaseConnection
+         Description: Tests SQL connection to verify database availability
+         Attempts connection and updates UI status based on result
+         Parameters: None
+         Returns: bool - true if connection successful, false otherwise
+         */
+        private bool CheckDatabaseConnection()
+        {
+            try
+            {
                 SqlConnection conn = ServerConnector.GetConnection();
-				{
-					conn.Open();
-					UpdateDbConnectionStatus(true);
-					return true;
-				}
-			}
-			catch
-			{
-				UpdateDbConnectionStatus(false);
-				return false;
-			}
-		}
-	}
+                {
+                    conn.Open();
+                    UpdateDbConnectionStatus(true);
+                    return true;
+                }
+            }
+            catch
+            {
+                UpdateDbConnectionStatus(false);
+                return false;
+            }
+        }
 
-	/*
-    Class: LoginCredentials
-    Description: Data transfer object containing parsed login credentials
-    */
-	public class LoginCredentials
+        /*
+        Class: LoginCredentials
+        Description: Data transfer object containing parsed login credentials
+        */
+        public class LoginCredentials
     {
         public string Username { get; set; }             // Parsed from TxtUsername
         public string Password { get; set; }             // Parsed from TxtPassword
