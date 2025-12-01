@@ -29,24 +29,31 @@ namespace GroundTerminalApp
     /// </summary>
     public partial class SearchingPageApp : Window
     {
-        public SearchingPageApp(FDMSDashboard dashboardInstance) // I am letting this page to pass the object as param
+        /*
+         Method: SearchingPageApp (Constructor)
+         Description: Initializes search page and establishes database connection
+         Receives dashboard instance reference and starts live telemetry update timer
+         Parameters: FDMSDashboard dashboardInstance
+         Returns: void
+         */
+        public SearchingPageApp(FDMSDashboard dashboardInstance)
         {
             InitializeComponent();
 
             bool connected = ConnectToDatabase();
 
-            // pass the controls as parameters
+            // Update UI connection indicators based on database state
             UpdateConnectionStatus(connectionStatusLbl, onlineIcon, offlineIcon, connected);
             DataContext = this;
             dashboard = dashboardInstance;
 
-            // Start chart timer here so i can display the live data from dashboard 
+            // Initialize timer for live telemetry data refresh
             DispatcherTimer chartTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(1) // update every second
+                Interval = TimeSpan.FromSeconds(1)
             };
 
-            // each tick will call UpdateAltitudeTrend to refresh the snapshot points
+            // Refresh telemetry display on each timer tick
             chartTimer.Tick += (s, e) => LiveUpdateTelemetryLabel();
             chartTimer.Start();
         
@@ -54,23 +61,29 @@ namespace GroundTerminalApp
 
         private FDMSDashboard dashboard;
 
-        // Declare AltitudePoints as an observable collection of Points to do the live data display
+        // Observable collection for altitude chart point updates
         public ObservableCollection<Point> AltitudePoints { get; set; } = new ObservableCollection<Point>();
 
+        /*
+         Method: ConnectToDatabase
+         Description: Establishes connection to SQL Server and validates connection state
+         Handles connection refresh and state validation for robustness
+         Parameters: None
+         Returns: bool - true if connection successful and open, false otherwise
+         */
         public bool ConnectToDatabase()
         {
-            // then call the GetConnection method from another window to get the connection 
+            // Retrieve connection from centralized ServerConnector
             serverConnectionForSearchingPage = ServerConnector.GetConnection();
 
             try
             {
                 serverConnectionForSearchingPage.Open();
 
-                // so I added this if condition is to be safe incase the database is not connected or desposed 
-                // check if connection is open
+                // Validate connection state before proceeding
                 if (serverConnectionForSearchingPage.State == System.Data.ConnectionState.Open)
                 {
-                    // I can just refresh the connection here by closing and reopening it  
+                    // Refresh connection by closing and reopening
                     serverConnectionForSearchingPage.Close();
                     serverConnectionForSearchingPage.Open();
 
@@ -78,14 +91,14 @@ namespace GroundTerminalApp
                 }
                 else if (serverConnectionForSearchingPage.State == System.Data.ConnectionState.Closed)
                 {
-                    // so if its closed then open it 
+                    // Attempt to open closed connection
                     serverConnectionForSearchingPage.Open();
 
                     return serverConnectionForSearchingPage.State == System.Data.ConnectionState.Open;
                 }
                 else
                 {
-                    // here if their is any other states like Connecting, Broken, etc.
+                    // Handle non-standard states (Connecting, Broken, etc.)
                     serverConnectionForSearchingPage.Open();
                     Console.WriteLine("Connection attempted from non-standard state.");
 
@@ -94,22 +107,23 @@ namespace GroundTerminalApp
             }
             catch (SqlException ex)
             {
-                // handle failed connection gracefully
+                // Log connection failure and return false
                 Console.WriteLine($"Database connection failed: {ex.Message}");
                 return false;
             }
-
-
-
         }
+
+        /*
+         Method: UpdateConnectionStatus
+         Description: Updates UI labels and icons to reflect database connection state
+         Parameters: Label connectionStatusLbl, Image onlineIcon, Image offlineIcon, bool isConnected
+         Returns: void
+         */
         public void UpdateConnectionStatus(Label connectionStatusLbl, Image onlineIcon, Image offlineIcon, bool isConnected)
         {
-
             if (isConnected)
             {
-                // if the connection is connected then change the check box and its label into green
-                // so when its online i will show the online icon that i got
-                // from https://icons8.com/ and when its offline will do the same but offline icon
+                // Display green indicator and online status
                 connectionStatusLbl.Foreground = Brushes.Green;
                 connectionStatusLbl.Content = "ONLINE";
                 onlineIcon.Visibility = Visibility.Visible;
@@ -117,15 +131,21 @@ namespace GroundTerminalApp
             }
             else
             {
-                // otherwise keep it red
+                // Display red indicator and offline status
                 connectionStatusLbl.Foreground = Brushes.Red;
-                connectionStatusLbl.Content = "OFFLINE"; // fixed to show OFFLINE correctly
+                connectionStatusLbl.Content = "OFFLINE";
                 offlineIcon.Visibility = Visibility.Visible;
                 onlineIcon.Visibility = Visibility.Collapsed;
             }
         }
 
-
+        /*
+         Method: SearchButton_Click
+         Description: Event handler for search button click
+         Retrieves user input and triggers data load operation
+         Parameters: object sender, RoutedEventArgs e
+         Returns: void
+         */
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             string userInput = SearchBoxTxtBx.Text.Trim();
@@ -133,89 +153,71 @@ namespace GroundTerminalApp
             LoadData(userInput); 
         }
 
-        // I am creating a method that update ui 
+        /*
+         Method: LoadData
+         Description: Parses user input and routes query to appropriate database table
+         Validates input format and loads Flight, Channel, or Telemetry data
+         Parameters: string userInput
+         Returns: void
+         */
         private void LoadData(string userInput)
         {
             List<string> displayItems = new List<string>();
 
-
             if (GetTargetTableFromInput(userInput) == 1)
             {
-                // take of the first char
+                // Extract numeric portion from Flight query format (Fxxx)
                 char firstCharacter = userInput[0];
-
-                // The rest of the string ID
                 string theIDPart = userInput.Substring(1);
-
-                // then convert it to int
                 int idPart = ParseInt(theIDPart);
 
+                // Query Flight table with parsed ID
                 getFlightTableData(idPart);
-
-                // then update the ui 
                 updateUI(userInput);
-
-
             }
             else if (GetTargetTableFromInput(userInput) == 2)
             {
-
-                // take of the first char
+                // Extract numeric portion from Channel query format (Cxxx)
                 char firstCharacter = userInput[0];
-
-                // The rest of the string ID
                 string theIDPart = userInput.Substring(1);
-
-                // then convert it to int
                 int idPart = ParseInt(theIDPart);
 
-                // call the Channel query method 
+                // Query Channel table with parsed ID
                 getChannelTableData(idPart);
-
-                // DEBUGGING if u ever see this line delete it before we submit 
-                //MessageBox.Show($"ID {idPart}");
-
-
-                 // then update the ui 
-                 updateUI(userInput);
+                updateUI(userInput);
             }
             else if (GetTargetTableFromInput(userInput) == 3)
             {
-                // take of the first char
+                // Extract numeric portion from Telemetry query format (Txxx)
                 char firstCharacter = userInput[0];
-
-                // The rest of the string ID
                 string theIDPart = userInput.Substring(1);
-
-                // then convert it to int
                 int idPart = ParseInt(theIDPart);
 
-                // send it to telemetry query to get the table 
+                // Query AircraftTransmitterPackets table with parsed ID
                 getDataFrmAircraftTransmitterPackets(idPart);
-
-                // then update the ui 
                 updateUI(userInput);
             }
             else
             {
-                // other wise their is some issue let user to check their input again 
+                // Invalid input format - notify user of expected format
                 MessageBox.Show("Please enter F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)");
-
                 return;
-
             }
         }
 
-
-
-
-
+        /*
+         Method: updateUI
+         Description: Formats and displays query results in search results listbox
+         Populates display with Flight, Channel, or Telemetry data from loaded lists
+         Parameters: string userInput
+         Returns: void
+         */
         private void updateUI(string userInput)
         {
             int returnedValue = GetTargetTableFromInput(userInput);
             var displayItems = new List<string>();
 
-            // Flight data
+            // Flight data display format
             if (returnedValue == 1 && flightsInfoList.Any())
             {
                 var f = flightsInfoList.First();
@@ -225,7 +227,7 @@ namespace GroundTerminalApp
                 displayItems.Add($"Departure Time: {f.DepartureTime:g}");
                 displayItems.Add($"Arrival Time: {(f.ArrivalTime.HasValue ? f.ArrivalTime.Value.ToString("g") : "N/A")}");
             }
-            // Channel data
+            // Channel data display format
             else if (returnedValue == 2 && channelInfoList.Any())
             {
                 var c = channelInfoList.First();
@@ -234,7 +236,7 @@ namespace GroundTerminalApp
                 displayItems.Add($"Channel Code: {c.ChannelCode}");
                 displayItems.Add($"Description: \n{c.Description}");
             }
-            // Telemetry data
+            // Telemetry data display format
             else if (returnedValue == 3 && telemetryList.Any())
             {
                 var t = telemetryList.First();
@@ -254,26 +256,29 @@ namespace GroundTerminalApp
                 displayItems.Add("Invalid input. Please start with F, T, or C.");
             }
 
-            // Bind results to UI
+            // Bind formatted results to listbox
             SearchIndxListBox.ItemsSource = displayItems;
         }
 
-
-
-
+        /*
+         Method: LiveUpdateTelemetryLabel
+         Description: Updates telemetry display with latest data from dashboard feed
+         Formats values and refreshes UI labels with current packet information
+         Parameters: None
+         Returns: void
+         */
         private void LiveUpdateTelemetryLabel()
         {
+            // Retrieve latest telemetry packet from dashboard stream
             var latestPacket = dashboard.telemetryDataList.LastOrDefault();
             if (latestPacket == null) return;
 
             QueryStatusChip.Text = "Live Data Ready";
-
             ResultsHeaderLbl.Content = " Reciving a value of 6 Values";
 
-            // create a new display object with formatted strings
+            // Format telemetry values for display
             var displayValues = new TelemetryDataNameAndValues
             {
-
                 TailNumber = $"TailNumber = {latestPacket.TailNumber}",
                 Pitch = $"Pitch = {latestPacket.Pitch:F2}",
                 AccelX = $"AccelX = {latestPacket.AccelX:F3}",
@@ -282,60 +287,61 @@ namespace GroundTerminalApp
                 Bank = $"Bank = {latestPacket.Bank:F2}",
             };
 
-            // update the DataContext so the XAML labels refresh
+            // Bind to DataContext to trigger UI label refresh
             this.DataContext = displayValues;
         }
 
-
-
-
+        /*
+         Method: NormalizeAltitude
+         Description: Scales altitude value to chart display range
+         Converts raw altitude to normalized 0-140 scale for graphing
+         Parameters: double altitude
+         Returns: double - normalized altitude value
+         */
         private double NormalizeAltitude(double altitude)
         {
-            double maxAltitude = 40000; 
+            double maxAltitude = 40000;
             return (altitude / maxAltitude) * 140;
         }
 
-
-        /*  
-         *  METHOD          : ParseInt
-         *  RETURN TYPE     : int
-         *  PARAMETERS      : string valueOfCell         -> String value to parse into integer.
-         *  DESCRIPTION     : Safely parses string values into integers.
-         *                    Returns 0 if parsing fails or value is invalid.
+        /*
+         Method: ParseInt
+         Description: Safely parses string values to integers with validation
+         Returns 0 if input is null, empty, or parsing fails
+         Parameters: string valueOfCell
+         Returns: int - parsed integer or 0 if invalid
          */
         int ParseInt(string valueOfCell)
         {
-            // so first i need to check if the incoming string value is null, empty or just a dash
-            // if that is the case then i will simply return 0 since it is not a valid number
+            // Reject null, empty, whitespace, or dash-only strings
             if (string.IsNullOrWhiteSpace(valueOfCell) || valueOfCell.Trim() == "-")
                 return 0;
 
             try
             {
-                // here i will try to parse the string value into an integer
-                // if the parsing works fine then i will return the integer value
+                // Attempt to parse string to integer
                 return int.Parse(valueOfCell.Trim());
             }
             catch
             {
-                // but if parsing fails for any reason then i will catch the error
-                // and return 0 as a safe default value instead of crashing the app
+                // Return safe default on parsing failure
                 return 0;
             }
         }
 
-
-
-
-
-
-        // another method that check the first character and decide which table to query
+        /*
+         Method: GetTargetTableFromInput
+         Description: Determines target database table based on user input prefix
+         Validates input format and returns table identifier (1=Flight, 2=Channel, 3=Telemetry)
+         Parameters: string userInput
+         Returns: int - 1 for Flight, 2 for Channel, 3 for Telemetry, 0 for invalid
+         */
         private int GetTargetTableFromInput(string userInput)
         {
             char firstCharacter = userInput[0];
 
-            // so if this method returns true, then check the firstcharacter and tell me if it is Flight query, Channer or packate
-            if (ParseUserInput(userInput,  firstCharacter))
+            // Route to appropriate table based on validated input prefix
+            if (ParseUserInput(userInput, firstCharacter))
             {
                 if (firstCharacter == 'F')
                 {
@@ -354,33 +360,45 @@ namespace GroundTerminalApp
             return 0; 
         }
 
-
-        // A method to parse user input
+        /*
+         Method: ParseUserInput
+         Description: Validates user input format and prefix character
+         Checks for empty input and valid prefixes (F, T, C)
+         Parameters: string userInput, char firstCharacter
+         Returns: bool - true if input is valid, false otherwise
+         */
         private bool ParseUserInput(string userInput, char firstCharacter)
         {
-            // Check if input is empty or null first
+            // Reject null or empty input
             if (string.IsNullOrWhiteSpace(userInput))
             {
                 MessageBox.Show("Input cannot be empty. Please enter F, T, or C followed by the ID.");
                 return false;
             }
 
-            // Only check the first character
+            // Extract and validate first character
             firstCharacter = userInput[0];
 
             if (firstCharacter == 'F' || firstCharacter == 'T' || firstCharacter == 'C')
             {
-                // its valid input return true other than that return false 
-                // also send the first character in return 
+                // Valid prefix found
                 return true;
             }
             else
             {
+                // Invalid prefix - notify user of expected format
                 MessageBox.Show("Please enter F, T, or C followed by the ID: F = Flight, T = Telemetry Package, C = Channel (e.g., F101, T25, C7)");
                 return false; 
             }
         }
 
+        /*
+         Method: getFlightTableData
+         Description: Queries Flight table and retrieves flight record by ID
+         Populates flightsInfoList with flight details including times and aircraft reference
+         Parameters: int userInputIDPart
+         Returns: void
+         */
         public void getFlightTableData(int userInputIDPart)
         {
             string sqlQuery = $@"
@@ -388,22 +406,16 @@ namespace GroundTerminalApp
                                 FROM dbo.Flight
                                 WHERE FlightId = @FlightId";
 
-
-            // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
-            // then we run the reader 
             using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
-                // i need a parameter before i excute the reader 
+                // Parameterize query to prevent SQL injection
                 cmd.Parameters.AddWithValue("@FlightId", userInputIDPart);
 
-                // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    
-
                     while (reader.Read())
                     {
-                        // Convert each value to its own type
+                        // Extract and type-cast database values
                         int flightId = reader.GetInt32(reader.GetOrdinal("FlightId"));
                         int aircraftId = reader.GetInt32(reader.GetOrdinal("AircraftId"));
                         string flightCode = reader["FlightCode"].ToString();
@@ -412,7 +424,7 @@ namespace GroundTerminalApp
                             ? (DateTime?)null
                             : reader.GetDateTime(reader.GetOrdinal("ArrivalTime"));
 
-                        // Store them into local object
+                        // Create and add Flight object to list
                         FlightInfo flight = new FlightInfo
                         {
                             FlightId = flightId,
@@ -422,17 +434,19 @@ namespace GroundTerminalApp
                             ArrivalTime = arrivalTime
                         };
 
-                        // Add to list
                         flightsInfoList.Add(flight);
                     }
-
                 }
             }
-
         }
 
-
-        // method to get the datas from AircraftTransmitterPackets table 
+        /*
+         Method: getDataFrmAircraftTransmitterPackets
+         Description: Queries AircraftTransmitterPackets table for telemetry data by ID
+         Retrieves all telemetry fields including acceleration, orientation, and altitude
+         Parameters: int userInputIDPart
+         Returns: void
+         */
         private void getDataFrmAircraftTransmitterPackets(int userInputIDPart)
         {
             string sqlQuery = @"
@@ -441,20 +455,16 @@ namespace GroundTerminalApp
                                 WHERE TelemetryId = @TelemetryId 
                                 ORDER BY TelemetryId;";
 
-
-
             using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
-                // i need a parameter before i excute the reader 
+                // Parameterize query to prevent SQL injection
                 cmd.Parameters.AddWithValue("@TelemetryId", userInputIDPart);
 
-                // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    // I will read the data from the reader and save it in the list for each rows
                     while (reader.Read())
                     {
-
+                        // Extract telemetry packet fields and type-cast
                         var telemetry = new TelemetryData
                         {
                             TelemetryId = reader.GetInt32(reader.GetOrdinal("TelemetryId")),
@@ -471,12 +481,17 @@ namespace GroundTerminalApp
 
                         telemetryList.Add(telemetry);
                     }
-
                 }
             }
         }
-      
 
+        /*
+         Method: getChannelTableData
+         Description: Queries Channel table and retrieves channel record by ID
+         Populates channelInfoList with channel details including name, code, and description
+         Parameters: int userInputIDPart
+         Returns: void
+         */
         public void getChannelTableData(int userInputIDPart)
         {
             string sqlQuery = @"
@@ -484,23 +499,16 @@ namespace GroundTerminalApp
                                 FROM Channel 
                                 WHERE ChannelId = @ChannelId";
 
-
-
-            // so we got the query string which store the sql query, the source table name string and the list or dictionary that stores the output data 
-            // then we run the reader 
             using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
             {
-                // i need a parameter before i excute the reader 
+                // Parameterize query to prevent SQL injection
                 cmd.Parameters.AddWithValue("@ChannelId", userInputIDPart);
 
-                // the i will excute a reader and import and save the values in the list of worker info
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    // I will read the data from the reader and save it in the list for each rows
                     while (reader.Read())
                     {
-                        // convert each value to its own type and add it to the list
-                        // then store them into local
+                        // Extract and type-cast database values
                         ChannelInfo channel = new ChannelInfo
                         {
                             ChannelId = reader.GetInt32(reader.GetOrdinal("ChannelID")),
@@ -510,22 +518,24 @@ namespace GroundTerminalApp
                         };
 
                         channelInfoList.Add(channel);
-
                     }
                 }
             }
-
         }
 
-        // i added this to store the database connection to a class level field 
+        // Class-level field for database connection
         private SqlConnection serverConnectionForSearchingPage;
 
+        // Lists to store query results
         private List<ChannelInfo> channelInfoList = new List<ChannelInfo>();
-
         private List<FlightInfo> flightsInfoList = new List<FlightInfo>();
-
-        // this class I am using it to store the data that comes from the table and I will make it list object
         private List<TelemetryData> telemetryList = new List<TelemetryData>();
+
+        /*
+         Class: TelemetryData
+         Description: Model for aircraft telemetry packet data
+         Stores sensor readings and aircraft orientation values from transmitter packets
+         */
         public class TelemetryData
         {
             public int TelemetryId { get; set; }
@@ -540,8 +550,11 @@ namespace GroundTerminalApp
             public double AccelZ { get; set; }
         }
 
-
-        // this class will store the information that comes from Channel table 
+        /*
+         Class: ChannelInfo
+         Description: Model for communication channel data
+         Stores channel identification and configuration information
+         */
         public class ChannelInfo
         {
             public int ChannelId { get; set; }
@@ -550,6 +563,11 @@ namespace GroundTerminalApp
             public string Description { get; set; }
         }
 
+        /*
+         Class: FlightInfo
+         Description: Model for flight operation data
+         Stores flight identification, aircraft reference, and timing information
+         */
         public class FlightInfo
         {
             public int FlightId { get; set; }
@@ -559,28 +577,23 @@ namespace GroundTerminalApp
             public DateTime? ArrivalTime { get; set; }
         }
 
-        // this class is a control for the line point in the graph so when ever it updates it will
-        // display the temetry data in x their name and y their values 
+        /*
+         Class: TelemetryDataNameAndValues
+         Description: View model for telemetry display on UI labels
+         Formats telemetry fields as "Name = Value" strings for UI binding
+         */
         public class TelemetryDataNameAndValues
         {
-            // each property formats the telemetry field as "Name = Value"
-            public string TailNumber {  get; set; }
-            public string Attitude {  get; set; }
-            public string Pitch {  get; set; }
+            // Each property stores formatted telemetry field as displayable string
+            public string TailNumber { get; set; }
+            public string Attitude { get; set; }
+            public string Pitch { get; set; }
             public string AccelX { get; set; }
             public string AccelY { get; set; }
-            public string AccelZ {  get; set; }
-            public string Bank { get;  set; }
+            public string AccelZ { get; set; }
+            public string Bank { get; set; }
             public string CheckSum { get; set; } 
             public string RecievedPacketNumber { get; set; }
-
         }
-
-
-
-
-
-
     }
-
 }
