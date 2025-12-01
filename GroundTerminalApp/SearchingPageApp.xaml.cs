@@ -263,16 +263,14 @@ namespace GroundTerminalApp
 
         private void LiveUpdateTelemetryLabel()
         {
-            // this will check the value if its null will return and the UI will display the default 
             var latestPacket = dashboard.telemetryDataList.LastOrDefault();
             if (latestPacket == null) return;
 
-            // if we get the live value of the data from the dashboard we will update the text boxes and labels 
             QueryStatusChip.Text = "Live Data Ready";
 
             ResultsHeaderLbl.Content = " Reciving a value of 6 Values";
 
-            // create a new display object with formatted strings to display in the binding object on xml 
+            // create a new display object with formatted strings
             var displayValues = new TelemetryDataNameAndValues
             {
 
@@ -290,6 +288,12 @@ namespace GroundTerminalApp
 
 
 
+
+        private double NormalizeAltitude(double altitude)
+        {
+            double maxAltitude = 40000; 
+            return (altitude / maxAltitude) * 140;
+        }
 
 
         /*  
