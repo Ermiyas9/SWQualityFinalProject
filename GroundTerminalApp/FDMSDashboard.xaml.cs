@@ -2,12 +2,11 @@
 /* FILE             : FDMSDashboard.xaml.cs                                                                                 */
 /* PROJECT          : Software Quality Final Project Milestone 2                                                            */
 /* NAMESPACE        : GroundTerminalApp                                                                                     */
-/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje’- Antoine Rose                      */
+/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje'- Antoine Rose                      */
 /* FIRST VERSION    : 2025-11-22                                                                                            */
 /* DESCRIPTION      : Defines the FDMSDashboard WPF window, which acts as the main ground terminal UI. It hosts TCP        */
 /*                    server logic, packet parsing and checksum validation, live telemetry visualization, and system logs.  */
 /* ======================================================================================================================== */
-
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-// for chart 
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -38,7 +36,6 @@ using WFColor = System.Drawing.Color;
 using WFSeries = System.Windows.Forms.DataVisualization.Charting.Series;
 using WFSeriesChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType;
 
-
 namespace GroundTerminalApp
 {
     /// <summary>
@@ -46,70 +43,70 @@ namespace GroundTerminalApp
     /// </summary>
     public partial class FDMSDashboard : Window
     {
-        // Tcp server components
+        // TCP server and listener components
         private TcpListener tcpListener;
         private CancellationTokenSource listenerCancellation;
         private TheCounterComponent packetCounter;
-        private const int DefaultListenPort = 5000; // default port if it's not set in config
+        private const int DefaultListenPort = 5000;
         private int listenPort;
 
-		/// <summary>
-		/// Initializes the FDMS dashboard UI, logging components, chart, counters, and TCP server.
-		/// </summary>
-		public FDMSDashboard()
+        /*
+         Method: FDMSDashboard (Constructor)
+         Description: Initializes dashboard UI, TCP server, chart display, and connection status
+         Sets up timers for stream monitoring and loads initial database connection state
+         Parameters: None
+         Returns: void
+         */
+        public FDMSDashboard()
         {
             InitializeComponent();
 
-            // log that the dashboard UI has loaded
+            // Log dashboard startup
             WriteSystemLog("INFO", "FDMSDashboard", "Ground terminal dashboard started.");
 
-			// call the chart display once the app starts to display our line chart 
-			LineChartSetupAndDisplay();
+            // Initialize altitude vs time chart display
+            LineChartSetupAndDisplay();
 
-            // Pass FDMSDashboard itself into SearchingPageApp so i can access any data from that page 
+            // Create search page with dashboard reference for data sharing
             var searchPage = new SearchingPageApp(this);
 
-
-            // so I can call that I created in another window, since that method takes label 
-            // i made a little change here instead of using the checkbox i got icon from icons8.com website that we can user their icons 
-            // so i am passing the images as a parameter
-            //var searchPage = new SearchingPageApp();
+            // Test initial database connection
             bool connected = searchPage.ConnectToDatabase();
 
-			// log the result of the first database connection test
-			if (connected)
-			{
-				WriteSystemLog("INFO", "FDMSDashboard", "Initial database connection succeeded.");
-			}
-			else
-			{
-				WriteSystemLog("ERROR", "FDMSDashboard", "Initial database connection failed.");
-			}
+            // Log connection result
+            if (connected)
+            {
+                WriteSystemLog("INFO", "FDMSDashboard", "Initial database connection succeeded.");
+            }
+            else
+            {
+                WriteSystemLog("ERROR", "FDMSDashboard", "Initial database connection failed.");
+            }
 
-			// pass the controls as parameters using the real connection state so it gets offline when its offline 
-			searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
+            // Update UI connection indicators with actual connection state
+            searchPage.UpdateConnectionStatus(dbConnectionStatusLbl, dbOnlineIcon, dbOfflineIcon, connected);
 
-            // Initialize packet counter and start TCP server
+            // Initialize packet counter and start TCP listener
             packetCounter = new TheCounterComponent();
             StartTcpServer();
 
-
-
-            // Timer to check stream status every second posiible
+            // Timer for monitoring packet stream status
             streamStatusTimer = new DispatcherTimer();
             streamStatusTimer.Interval = TimeSpan.FromSeconds(1);
             streamStatusTimer.Tick += (s, e) => UpdatingTheStatusOfStream();
             streamStatusTimer.Start();
         }
 
-        // a time class to track the stream online status with time so if its not send for a while we can apply that change to the UI
+        // Timer for periodic stream online/offline status checks
         private DispatcherTimer streamStatusTimer;
 
-        /// <summary>
-        /// Handles the click event for the "Search and Query" button.
-        /// </summary>
-        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
-        /// <param name="e">The event data associated with the click event.</param>
+        /*
+         Method: BtnSearchAndQuery_Click
+         Description: Event handler for Search and Query button click
+         Opens SearchingPageApp window with dashboard reference for data access
+         Parameters: object sender, RoutedEventArgs e
+         Returns: void
+         */
         private void BtnSearchAndQuery_Click(object sender, RoutedEventArgs e)
         {
             SearchingPageApp searchPage = new SearchingPageApp(this);
@@ -117,11 +114,13 @@ namespace GroundTerminalApp
             searchPage.Show();
         }
 
-        /// <summary>
-        /// Handles the click event for the "System Logs" button.
-        /// </summary>
-        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
-        /// <param name="e">The event data associated with the click event.</param>
+        /*
+         Method: BtnSystemLogs_Click
+         Description: Event handler for System Logs button click
+         Opens logsPage window with dashboard reference for log filtering and display
+         Parameters: object sender, RoutedEventArgs e
+         Returns: void
+         */
         private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
         {
             logsPage logsPage = new logsPage(this);
@@ -129,11 +128,13 @@ namespace GroundTerminalApp
             logsPage.Show();
         }
 
-        /// <summary>
-        /// Handles the click event for the "Login Page" button.
-        /// </summary>
-        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
-        /// <param name="e">The event data associated with the click event.</param>
+        /*
+         Method: BtnLoginPage_Click
+         Description: Event handler for Login Page button click
+         Opens UsersLoginPage window for user authentication and session management
+         Parameters: object sender, RoutedEventArgs e
+         Returns: void
+         */
         private void BtnLoginPage_Click(object sender, RoutedEventArgs e)
         {
             UsersLoginPage loginPage = new UsersLoginPage();
@@ -141,43 +142,39 @@ namespace GroundTerminalApp
             loginPage.Show();
         }
 
-		/// <summary>
-		/// Updates dashboard labels and charts using the latest telemetry and packet counters.
-		/// </summary>
-		private void UpdateDashboardFromCounter()
+        /*
+         Method: UpdateDashboardFromCounter
+         Description: Refreshes all dashboard UI labels and charts with latest telemetry
+         Updates packet counts, tail number, checksum, altitude, orientation, and acceleration values
+         Parameters: None
+         Returns: void
+         */
+        private void UpdateDashboardFromCounter()
         {
             TelemetryData telemetry = packetCounter.LastTelemetry;
             int receivedCount = packetCounter.Received;
             int sentCount = packetCounter.Sent;
-
-            // I am adding more two variables to store the tail number , Checksum
-            tailNumberLbl.Content = $"Tail: {telemetry.TailNumber}";
-            checksumLbl.Content = $"Checksum: {telemetry.Checksum}";
-
-
-            // i added the dropped or corrupt packate field so
             int droppedCount = packetCounter.Dropped;
 
-            // Update labels (we don't have sent count in here yet)----- I have added the labels thank u
+            // Update packet counter labels
             PcktRecievedLbl.Content = $"Received: {receivedCount}";
             LblSent.Content = $"Sent: {sentCount}";
             LblDropped.Content = $"Dropped: {droppedCount}";
 
             if (telemetry != null)
             {
+                // Update window title with latest packet count and aircraft
                 this.Title = $"FDMS Dashboard - Received: {receivedCount} - Tail: {telemetry.TailNumber}";
 
+                // Add latest telemetry point to altitude chart
                 UpdateLineChart(telemetry);
 
-                // streamOnlineIcon update is handled separately in UpdatingTheStatusOfStream()
+                // Update all telemetry display labels with current values
                 LblAltitudeValue.Content = $"{telemetry.Altitude:F0} ft";
                 LblPitchValue.Content = $" {telemetry.Pitch:F1}°";
                 LblBankValue.Content = $" {telemetry.Bank:F1}°";
-
-                // so i update the ui here for the checksum and the tailnumber 
                 tailNumberLbl.Content = $" {telemetry.TailNumber}";
                 checksumLbl.Content = $"{telemetry.Checksum}";
-
                 LblAccelXValue.Content = $"Accel X: {telemetry.AccelX:F2}";
                 LblAccelYValue.Content = $"Accel Y: {telemetry.AccelY:F2}";
                 LblAccelZValue.Content = $"Accel Z: {telemetry.AccelZ:F2}";
@@ -187,26 +184,30 @@ namespace GroundTerminalApp
                 this.Title = $"FDMS Dashboard - Received: {receivedCount}";
             }
 
-            // update the stream status icon and label
+            // Update stream status indicators separately
             UpdatingTheStatusOfStream();
         }
 
-		/// <summary>
-		/// Checks the last telemetry update time and refreshes the stream online/offline status indicators.
-		/// </summary>
-		private void UpdatingTheStatusOfStream()
+        /*
+         Method: UpdatingTheStatusOfStream
+         Description: Checks telemetry timestamp and updates stream online/offline UI indicators
+         Clears telemetry labels when stream offline (no updates for 5+ seconds)
+         Parameters: None
+         Returns: void
+         */
+        private void UpdatingTheStatusOfStream()
         {
             bool streamOnline = false;
 
-            // by using the LastUpdateOfStream i will know the status of the stream if is online or not 
+            // Determine stream status based on last update time
             if (packetCounter.LastUpdateOfStream != DateTime.MinValue)
             {
                 streamOnline = (DateTime.UtcNow - packetCounter.LastUpdateOfStream).TotalSeconds <= 5;
             }
 
-            // the in this condition i can display or hide the online status 
             if (streamOnline)
             {
+                // Display green online indicator and status
                 streamOnlineIcon.Visibility = Visibility.Visible;
                 streamOfflineIcon.Visibility = Visibility.Collapsed;
                 packetStreamStatusLbl.Foreground = Brushes.Green;
@@ -214,12 +215,13 @@ namespace GroundTerminalApp
             }
             else
             {
+                // Display red offline indicator and status
                 streamOnlineIcon.Visibility = Visibility.Collapsed;
                 streamOfflineIcon.Visibility = Visibility.Visible;
                 packetStreamStatusLbl.Foreground = Brushes.Red;
                 packetStreamStatusLbl.Content = "OFFLINE";
 
-                // Clear telemetry labels with with we do this when the server goes offline
+                // Clear telemetry labels when no data received
                 LblAltitudeValue.Content = "NA";
                 LblPitchValue.Content = "NA";
                 LblBankValue.Content = "NA";
@@ -229,14 +231,16 @@ namespace GroundTerminalApp
                 LblAccelYValue.Content = "NA";
                 LblAccelZValue.Content = "NA";
             }
-
         }
 
-		/// <summary>
-		/// Saves the latest telemetry packet into the AircraftTransmitterPackets table.
-		/// </summary>
-		/// <param name="telemetry">The telemetry data object to be stored in the database.</param>
-		private void SaveGroundTerminalPacketsToDB(TelemetryData telemetry)
+        /*
+         Method: SaveGroundTerminalPacketsToDB
+         Description: Inserts telemetry packet into AircraftTransmitterPackets table
+         Persists all sensor data with timestamp for historical analysis
+         Parameters: TelemetryData telemetry
+         Returns: void
+         */
+        private void SaveGroundTerminalPacketsToDB(TelemetryData telemetry)
         {
             try
             {
@@ -252,6 +256,7 @@ namespace GroundTerminalApp
 
                     using (SqlCommand cmd = new SqlCommand(sqlForStoringPcktsToTable, conn))
                     {
+                        // Parameterize all values to prevent SQL injection
                         cmd.Parameters.AddWithValue("@SampleTimeStamp", telemetry.Timestamp);
                         cmd.Parameters.AddWithValue("@TailNumber", telemetry.TailNumber);
                         cmd.Parameters.AddWithValue("@Checksum", telemetry.Checksum);
@@ -269,65 +274,70 @@ namespace GroundTerminalApp
             catch (Exception ex)
             {
                 Console.WriteLine("DB insert failed (AircraftTransmitterPackets): " + ex.Message);
-				WriteSystemLog("ERROR", "FDMSDashboard", "DB insert failed (AircraftTransmitterPackets): " + ex.Message);
-			}
-		}
+                WriteSystemLog("ERROR", "FDMSDashboard", "DB insert failed (AircraftTransmitterPackets): " + ex.Message);
+            }
+        }
 
-		/// <summary>
-		/// Inserts a single row into the SystemLogs table for application and TCP server events.
-		/// </summary>
-		/// <param name="level">The severity level of the log entry (for example, INFO or ERROR).</param>
-		/// <param name="source">The logical source of the log entry, such as a class or method name.</param>
-		/// <param name="message">The descriptive log message to record.</param>
-		private void WriteSystemLog(string level, string source, string message)
-		{
-			try
-			{
-				using (SqlConnection conn = ServerConnector.GetConnection())
-				{
-					conn.Open();
+        /*
+         Method: WriteSystemLog
+         Description: Inserts log entry into SystemLogs table for audit trail
+         Falls back to local text file if database logging fails
+         Parameters: string level, string source, string message
+         Returns: void
+         */
+        private void WriteSystemLog(string level, string source, string message)
+        {
+            try
+            {
+                using (SqlConnection conn = ServerConnector.GetConnection())
+                {
+                    conn.Open();
 
-					// insert one row into the SystemLogs table
-					string sql = @"
+                    // Insert log entry with current timestamp
+                    string sql = @"
                         INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
                         VALUES (@Timestamp, @Level, @Source, @Message);";
 
-					using (SqlCommand cmd = new SqlCommand(sql, conn))
-					{
-						// I am using current time for the Timestamp column
-						cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
-						cmd.Parameters.AddWithValue("@Level", level);
-						cmd.Parameters.AddWithValue("@Source", source);
-						cmd.Parameters.AddWithValue("@Message", message);
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@Level", level);
+                        cmd.Parameters.AddWithValue("@Source", source);
+                        cmd.Parameters.AddWithValue("@Message", message);
 
-						cmd.ExecuteNonQuery(); // run the INSERT
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				// If logging to database fails, I just write to local file as backup
-				try
-				{
-					File.AppendAllText(
-						"local_error_log.txt",
-						DateTime.Now.ToString("s") + " [LogError] " + ex.Message + Environment.NewLine
-					);
-				}
-				catch
-				{
-					// ignore if even this fails
-				}
-			}
-		}
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback to local file if database logging fails
+                try
+                {
+                    File.AppendAllText(
+                        "local_error_log.txt",
+                        DateTime.Now.ToString("s") + " [LogError] " + ex.Message + Environment.NewLine
+                    );
+                }
+                catch
+                {
+                    // Silent failure - prevent cascading errors
+                }
+            }
+        }
 
-		/// <summary>
-		/// Reads the listen port from configuration, starts the TCP listener, and begins accepting clients.
-		/// </summary>
-		private void StartTcpServer()
+        /*
+         Method: StartTcpServer
+         Description: Reads listen port from config, creates TCP listener, and begins accepting clients
+         Starts background task for asynchronous client acceptance
+         Parameters: None
+         Returns: void
+         */
+        private void StartTcpServer()
         {
             listenerCancellation = new CancellationTokenSource();
 
+            // Read port from configuration file
             string portText = ConfigurationManager.AppSettings["ServerPort"];
             int port;
 
@@ -338,19 +348,24 @@ namespace GroundTerminalApp
 
             listenPort = port;
 
+            // Create and start TCP listener on all interfaces
             tcpListener = new TcpListener(IPAddress.Any, listenPort);
             tcpListener.Start();
 
-			// log that the TCP server started on this port
-			WriteSystemLog("INFO", "FDMSDashboard", "TCP server started on port " + listenPort + ".");
+            WriteSystemLog("INFO", "FDMSDashboard", "TCP server started on port " + listenPort + ".");
 
-			Task acceptTask = AcceptClients(listenerCancellation.Token);
+            // Start background task for accepting client connections
+            Task acceptTask = AcceptClients(listenerCancellation.Token);
         }
 
-		/// <summary>
-		/// Stops the TCP listener and cancels the accept loop, logging any shutdown errors.
-		/// </summary>
-		private void StopTcpServer()
+        /*
+         Method: StopTcpServer
+         Description: Stops TCP listener and cancels client acceptance loop
+         Cleans up resources and logs shutdown completion
+         Parameters: None
+         Returns: void
+         */
+        private void StopTcpServer()
         {
             try
             {
@@ -364,50 +379,52 @@ namespace GroundTerminalApp
                     tcpListener.Stop();
                 }
 
-				// log that the TCP server stopped
-				WriteSystemLog("INFO", "FDMSDashboard", "TCP server stopped.");
-			}
+                WriteSystemLog("INFO", "FDMSDashboard", "TCP server stopped.");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine("Error stopping TCP server: " + ex.Message);
-				WriteSystemLog("ERROR", "FDMSDashboard", "Error stopping TCP server: " + ex.Message);
-			}
-		}
+                WriteSystemLog("ERROR", "FDMSDashboard", "Error stopping TCP server: " + ex.Message);
+            }
+        }
 
-		/// <summary>
-		/// Asynchronously accepts incoming TCP clients and dispatches each to a handler task.
-		/// </summary>
-		/// <param name="token">A cancellation token used to stop accepting new clients.</param>
-		/// <returns>A task that represents the asynchronous accept loop operation.</returns>
-		private async Task AcceptClients(CancellationToken token)
+        /*
+         Method: AcceptClients
+         Description: Asynchronously accepts incoming TCP connections in loop
+         Dispatches each client to handler task on background thread
+         Parameters: CancellationToken token
+         Returns: Task - async acceptance loop operation
+         */
+        private async Task AcceptClients(CancellationToken token)
         {
             try
             {
                 while (true)
                 {
+                    // Wait for and accept incoming client connection
                     TcpClient client = await tcpListener.AcceptTcpClientAsync();
 
-					// log that a new client connected
-					WriteSystemLog("INFO", "FDMSDashboard", "Client connected: " + client.Client.RemoteEndPoint);
+                    WriteSystemLog("INFO", "FDMSDashboard", "Client connected: " + client.Client.RemoteEndPoint);
 
-					Task clientTask = Task.Run(() => HandleClient(client, token));
+                    // Process client on background thread
+                    Task clientTask = Task.Run(() => HandleClient(client, token));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error accepting client: " + ex.Message);
-				WriteSystemLog("ERROR", "FDMSDashboard", "Error accepting client: " + ex.Message);
-			}
-		}
+                WriteSystemLog("ERROR", "FDMSDashboard", "Error accepting client: " + ex.Message);
+            }
+        }
 
-
-		/// <summary>
-		/// Reads framed packets from the TCP client stream, updates counters, and processes telemetry.
-		/// </summary>
-		/// <param name="client">The connected TCP client providing telemetry data.</param>
-		/// <param name="token">A cancellation token used to stop processing the client.</param>
-		/// <returns>A task that represents the asynchronous client handling operation.</returns>
-		private async Task HandleClient(TcpClient client, CancellationToken token)
+        /*
+         Method: HandleClient
+         Description: Reads framed packets from client stream and processes telemetry data
+         Validates packet checksums and updates dashboard in real-time
+         Parameters: TcpClient client, CancellationToken token
+         Returns: Task - async client handling operation
+         */
+        private async Task HandleClient(TcpClient client, CancellationToken token)
         {
             using (client)
             {
@@ -418,6 +435,7 @@ namespace GroundTerminalApp
                 {
                     while (true)
                     {
+                        // Read 4-byte frame length header
                         int lengthRead = await ReadFromStream(stream, lengthBuffer, 0, 4, token);
                         if (lengthRead != 4)
                         {
@@ -430,6 +448,7 @@ namespace GroundTerminalApp
                             break;
                         }
 
+                        // Read packet data based on frame length
                         byte[] packetBuffer = new byte[packetLength];
                         int packetRead = await ReadFromStream(stream, packetBuffer, 0, packetLength, token);
                         if (packetRead != packetLength)
@@ -437,43 +456,44 @@ namespace GroundTerminalApp
                             break;
                         }
 
+                        // Process packet and update counters
                         bool ok = packetCounter.ProcessPacket(packetBuffer);
                         if (ok)
                         {
-                            // I am adding this block to insert into the table
-                            // what ever we recieve we will update to the dashboard the same time we will store to the db table
+                            // Extract telemetry and persist to database
                             TelemetryData telemetry = packetCounter.LastTelemetry;
                             if (telemetry != null)
                             {
                                 SaveGroundTerminalPacketsToDB(telemetry);
-
                                 telemetryDataList.Add(telemetry);
                             }
+
+                            // Update UI on dispatcher thread
                             Dispatcher.Invoke(UpdateDashboardFromCounter);
                         }
                     }
                 }
                 catch (Exception)
                 {
+                    // Client disconnected or read error - exit handler
                 }
             }
         }
 
-		/// <summary>
-		/// Reads the requested number of bytes from a network stream into the buffer.
-		/// </summary>
-		/// <param name="stream">The network stream to read from.</param>
-		/// <param name="buffer">The byte buffer used to store the incoming data.</param>
-		/// <param name="offset">The starting index in the buffer where data should be written.</param>
-		/// <param name="count">The total number of bytes expected to be read.</param>
-		/// <param name="token">A cancellation token used to cancel the read operation.</param>
-		/// <returns>The total number of bytes actually read from the stream.</returns>
-		private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        /*
+         Method: ReadFromStream
+         Description: Reads exact number of bytes from network stream into buffer
+         Handles partial reads by looping until count reached or stream ends
+         Parameters: NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token
+         Returns: int - total bytes read (may be less than count if stream ends)
+         */
+        private async Task<int> ReadFromStream(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
         {
             int totalRead = 0;
 
             while (totalRead < count)
             {
+                // Read available data from stream
                 int read = await stream.ReadAsync(buffer, offset + totalRead, count - totalRead, token);
 
                 if (read <= 0)
@@ -487,111 +507,119 @@ namespace GroundTerminalApp
             return totalRead;
         }
 
-		/// <summary>
-		/// Configures the altitude-vs-time line chart area, axes, colors, and series definition.
-		/// </summary>
-		private void LineChartSetupAndDisplay()
+        /*
+         Method: LineChartSetupAndDisplay
+         Description: Configures altitude vs time line chart with axes, colors, and formatting
+         Initializes chart area and series for real-time data visualization
+         Parameters: None
+         Returns: void
+         */
+        private void LineChartSetupAndDisplay()
         {
-            // add the chart area once 
+            // Create chart area only if not already present
             if (lineChartAlltVsTime.ChartAreas.Count == 0)
             {
                 var chartArea = new WFChartArea("MainArea");
-                chartArea.BackColor = WFColor.FromArgb(34, 34, 34); // BG color
+                chartArea.BackColor = WFColor.FromArgb(34, 34, 34);
 
-                // The title for AXISS
+                // Configure axis titles and labels
                 chartArea.AxisX.Title = "Time";
                 chartArea.AxisY.Title = "Altitude";
-
-                // color for the chart area 
-                chartArea.AxisX.TitleForeColor = WFColor.Blue;  
+                chartArea.AxisX.TitleForeColor = WFColor.Blue;
                 chartArea.AxisY.TitleForeColor = WFColor.Green;
                 chartArea.AxisX.LabelStyle.ForeColor = WFColor.Pink;
                 chartArea.AxisY.LabelStyle.ForeColor = WFColor.Purple;
+
+                // Disable grid lines for cleaner appearance
                 chartArea.AxisX.MajorGrid.Enabled = false;
                 chartArea.AxisY.MajorGrid.Enabled = false;
 
-                // bfor just show the time not the date 
+                // Format X-axis labels to show time only (not full date)
                 chartArea.AxisX.LabelStyle.Format = "d MMM HH:mm:ss";
 
-                // add the chart 
                 lineChartAlltVsTime.ChartAreas.Add(chartArea);
             }
 
-            //  so we need to add the att series only if it didnt come from terminal
+            // Add altitude series if not already present
             if (lineChartAlltVsTime.Series.FindByName("Altitude") == null)
             {
                 var altitudeSeries = new WFSeries("Altitude");
                 altitudeSeries.ChartType = WFSeriesChartType.Line;
                 altitudeSeries.Color = WFColor.LightSkyBlue;
 
-                // So we can make the titme stamp to be the x value and the attitude Y
+                // Configure X-axis as timestamp for temporal data
                 altitudeSeries.XValueType = ChartValueType.DateTime;
                 altitudeSeries.BorderWidth = 2;
                 lineChartAlltVsTime.Series.Add(altitudeSeries);
             }
 
-
-            // styling for the chart bg color and foreclr
+            // Style chart background and foreground
             lineChartAlltVsTime.BackColor = WFColor.FromArgb(34, 34, 34);
             lineChartAlltVsTime.ForeColor = WFColor.White;
 
+            // Initialize chart with placeholder point if empty
             if (lineChartAlltVsTime.Series["Altitude"].Points.Count == 0)
             {
                 lineChartAlltVsTime.Series["Altitude"].Points.AddXY(DateTime.Now, 1000);
             }
         }
 
-		/// <summary>
-		/// Appends a new altitude data point to the line chart and trims old points if needed.
-		/// </summary>
-		/// <param name="telemetry">The telemetry sample providing timestamp and altitude.</param>
-		private void UpdateLineChart(TelemetryData telemetry)
+        /*
+         Method: UpdateLineChart
+         Description: Appends new altitude data point to chart and trims old points if needed
+         Maintains maximum 1000 points to prevent memory bloat
+         Parameters: TelemetryData telemetry
+         Returns: void
+         */
+        private void UpdateLineChart(TelemetryData telemetry)
         {
-            // the chart works only when we recieve data 
             if (telemetry == null) return;
 
-            // create a variable that hold the chart series  
+            // Get altitude series from chart
             var seriesForAttitude = lineChartAlltVsTime.Series.FindByName("Altitude");
-
-            // then if the series is null rturn if not then add the series from the attitude that comes Ground Terminal
             if (seriesForAttitude == null) return;
 
+            // Add new data point with timestamp and altitude
             seriesForAttitude.Points.AddXY(telemetry.Timestamp, telemetry.Altitude);
 
-            // THIS IS OPTIONAL TO KEEP THE CHART TO BE SMALLER
+            // Remove oldest point if series exceeds maximum size
             if (seriesForAttitude.Points.Count > 1000)
                 seriesForAttitude.Points.RemoveAt(0);
         }
 
-		/// <summary>
-		/// Provides a base virtual render method for dashboard components.
-		/// </summary>
-		public class DashBoardComponents
+        /*
+         Class: DashBoardComponents
+         Description: Base class for dashboard component rendering
+         Provides virtual method for subclasses to override render behavior
+         */
+        public class DashBoardComponents
         {
-
-
-            // then we will have a render method and this method will be overriden by the child classes if its neccessarly 
+            // Virtual render method for subclass implementation
             public virtual void RenderingDashbrdComponents()
             {
                 Console.WriteLine($"Rendering chart or any thing ...");
             }
         }
 
-		/// <summary>
-		/// Renders chart-related dashboard content, such as titles and data points.
-		/// </summary>
-		public class ChartDisplay : DashBoardComponents
+        /*
+         Class: ChartDisplay
+         Description: Dashboard component for rendering altitude chart
+         Overrides base render method to display chart-specific content
+         */
+        public class ChartDisplay : DashBoardComponents
         {
             public override void RenderingDashbrdComponents()
             {
-                Console.WriteLine($"Rendering chart: title with data  points.");
+                Console.WriteLine($"Rendering chart: title with data points.");
             }
         }
 
-		/// <summary>
-		/// Renders the current connection status label as connected or disconnected.
-		/// </summary>
-		public class ConnectionStatus : DashBoardComponents
+        /*
+         Class: ConnectionStatus
+         Description: Dashboard component for rendering database connection status
+         Displays connected or disconnected status based on connection state
+         */
+        public class ConnectionStatus : DashBoardComponents
         {
             public bool IsConnected { get; set; }
 
@@ -602,28 +630,28 @@ namespace GroundTerminalApp
             }
         }
 
-		/// <summary>
-		/// Initializes packet counters, dropped packet tracking, and telemetry storage.
-		/// </summary>
-		public class TheCounterComponent : DashBoardComponents
+        /*
+         Class: TheCounterComponent
+         Description: Manages packet counting, telemetry storage, and checksum validation
+         Thread-safe component with properties for received, sent, and dropped packet tracking
+         */
+        public class TheCounterComponent : DashBoardComponents
         {
             private int received;
             private int sent;
-
-            // this field i am going to use it to track the status of dropped packets
             private int dropped;
             private TelemetryData lastTelemetry;
 
-            // I am adding this to keep track of the time stamp for online and offline status 
+            // Timestamp of last received telemetry for stream status monitoring
             public DateTime LastUpdateOfStream { get; private set; }
 
             private readonly object lockObject = new object();
 
             /*
-            Property: Received
-            Description: Gets/sets number of successfully received packets
-            Increments only on valid checksum validation
-            */
+             Property: Received
+             Description: Gets/sets count of successfully received packets
+             Thread-safe access with lock protection
+             */
             public int Received
             {
                 get
@@ -643,9 +671,9 @@ namespace GroundTerminalApp
             }
 
             /*
-            Property: Sent
-            Description: Gets/sets number of packets sent by ground terminal
-            */
+             Property: Sent
+             Description: Gets/sets count of packets sent by ground terminal
+             */
             public int Sent
             {
                 get { return sent; }
@@ -653,9 +681,10 @@ namespace GroundTerminalApp
             }
 
             /*
-                Property: Dropped
-                Description: Gets/sets number of invalid or corrupted packets
-            */
+             Property: Dropped
+             Description: Gets/sets count of invalid or corrupted packets
+             Thread-safe access with lock protection
+             */
             public int Dropped
             {
                 get
@@ -674,11 +703,11 @@ namespace GroundTerminalApp
                 }
             }
 
-            /// <summary>
-            /// Gets the most recent telemetry data received.
-            /// </summary>
-            /// <remarks>Access to this property is thread-safe. The returned value reflects the state
-            /// of the telemetry data at the time of access.</remarks>
+            /*
+             Property: LastTelemetry
+             Description: Gets most recent telemetry data received
+             Thread-safe read-only access
+             */
             public TelemetryData LastTelemetry
             {
                 get
@@ -690,52 +719,41 @@ namespace GroundTerminalApp
                 }
             }
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="TheCounterComponent"/> class.
-            /// </summary>
-            /// <remarks>This constructor initializes the component with default values.  The counters
-            /// for received, sent, and dropped packets are set to zero,  and the last telemetry data is initialized to
-            /// null.</remarks>
+            /*
+             Method: TheCounterComponent (Constructor)
+             Description: Initializes packet counter with zero values and null telemetry
+             */
             public TheCounterComponent()
             {
                 received = 0;
                 sent = 0;
-                // i added this to check the status of the dropped packets 
                 dropped = 0;
                 lastTelemetry = null;
             }
 
-            /// <summary>
-            /// Processes a telemetry packet and updates the internal state with the extracted data.
-            /// </summary>
-            /// <remarks>This method attempts to parse the provided packet data, validate its
-            /// checksum, and extract telemetry information. If successful, the extracted telemetry data is stored, and
-            /// the internal counters and timestamp are updated. <para> Thread safety is ensured by locking during
-            /// updates to shared state. </para></remarks>
-            /// <param name="packetData">The raw packet data as a byte array. Must not be null.</param>
-            /// <returns><see langword="true"/> if the packet was successfully processed and the telemetry data was updated;
-            /// otherwise, <see langword="false"/> if the packet is invalid or processing fails.</returns>
+            /*
+             Method: ProcessPacket
+             Description: Parses packet data, validates checksum, and updates counters
+             Thread-safe updates to shared state with lock protection
+             Parameters: byte[] packetData
+             Returns: bool - true if valid packet processed, false if invalid or parse error
+             */
             public bool ProcessPacket(byte[] packetData)
             {
                 try
                 {
-                    // Convert byte array to ASCII string and remove whitespace
+                    // Convert packet bytes to ASCII string
                     string packetString = Encoding.ASCII.GetString(packetData).Trim();
 
-                    // Attempt to deconstruct packet and validate checksum
+                    // Attempt to parse and validate packet
                     if (DeconstructPacket(packetString, out TelemetryData telemetry))
                     {
-                        // Store telemetry and increment counter under lock
+                        // Update state under lock
                         lock (lockObject)
                         {
                             lastTelemetry = telemetry;
                             received++;
-
-                            // here I update the time stamp here 
                             LastUpdateOfStream = DateTime.UtcNow;
-
-
-
                         }
                         return true;
                     }
@@ -749,129 +767,135 @@ namespace GroundTerminalApp
                 }
             }
 
-			/// <summary>
-			/// Parses a delimited packet string into a TelemetryData object and validates fields.
-			/// </summary>
-			/// <param name="packetLine">The raw packet string containing delimited telemetry values.</param>
-			/// <param name="telemetry">When this method returns, holds the parsed telemetry data if successful.</param>
-			/// <returns>True if the packet string is valid and parsed; otherwise, false.</returns>
-			private bool DeconstructPacket(string packetLine, out TelemetryData telemetry)
-			{
-				telemetry = null;
+            /*
+             Method: DeconstructPacket
+             Description: Parses delimited packet string into TelemetryData with checksum validation
+             Validates all fields present and non-empty before parsing
+             Parameters: string packetLine, out TelemetryData telemetry
+             Returns: bool - true if valid packet, false if parsing or validation fails
+             */
+            private bool DeconstructPacket(string packetLine, out TelemetryData telemetry)
+            {
+                telemetry = null;
 
-				// Split packet by pipe delimiter
-				string[] parts = packetLine.Split('|');
+                // Split packet by pipe delimiter
+                string[] parts = packetLine.Split('|');
 
-				// Packet must have exactly 11 fields (tail + seq + 8 data + 1 checksum)
-				if (parts.Length != 11)
-					return false;
+                // Packet must have exactly 11 fields
+                if (parts.Length != 11)
+                    return false;
 
-				try
-				{
-					// Extract all fields from packet
-					string tailNumber = parts[0];
-					string sequenceText = parts[1];
-					string timestampText = parts[2];
-					string accelXText = parts[3];
-					string accelYText = parts[4];
-					string accelZText = parts[5];
-					string weightText = parts[6];
-					string altitudeText = parts[7];
-					string pitchText = parts[8];
-					string bankText = parts[9];
-					string checksumText = parts[10];
+                try
+                {
+                    // Extract all fields from packet parts
+                    string tailNumber = parts[0];
+                    string sequenceText = parts[1];
+                    string timestampText = parts[2];
+                    string accelXText = parts[3];
+                    string accelYText = parts[4];
+                    string accelZText = parts[5];
+                    string weightText = parts[6];
+                    string altitudeText = parts[7];
+                    string pitchText = parts[8];
+                    string bankText = parts[9];
+                    string checksumText = parts[10];
 
-					// Validate no empty fields to prevent parsing errors
-					if (string.IsNullOrWhiteSpace(accelXText) ||
-						string.IsNullOrWhiteSpace(accelYText) ||
-						string.IsNullOrWhiteSpace(accelZText) ||
-						string.IsNullOrWhiteSpace(weightText) ||
-						string.IsNullOrWhiteSpace(altitudeText) ||
-						string.IsNullOrWhiteSpace(pitchText) ||
-						string.IsNullOrWhiteSpace(bankText) ||
-						string.IsNullOrWhiteSpace(checksumText))
-					{
-						return false;
-					}
+                    // Validate no empty fields to prevent parsing errors
+                    if (string.IsNullOrWhiteSpace(accelXText) ||
+                        string.IsNullOrWhiteSpace(accelYText) ||
+                        string.IsNullOrWhiteSpace(accelZText) ||
+                        string.IsNullOrWhiteSpace(weightText) ||
+                        string.IsNullOrWhiteSpace(altitudeText) ||
+                        string.IsNullOrWhiteSpace(pitchText) ||
+                        string.IsNullOrWhiteSpace(bankText) ||
+                        string.IsNullOrWhiteSpace(checksumText))
+                    {
+                        return false;
+                    }
 
-					if (!uint.TryParse(sequenceText, out uint sequenceNumber))
-						return false;
+                    if (!uint.TryParse(sequenceText, out uint sequenceNumber))
+                        return false;
 
-					// Parse and validate checksum
-					if (!int.TryParse(checksumText, out int receivedChecksum))
-						return false;
+                    // Parse and validate checksum field
+                    if (!int.TryParse(checksumText, out int receivedChecksum))
+                        return false;
 
-					var culture = System.Globalization.CultureInfo.InvariantCulture;
+                    // Use invariant culture for reliable numeric parsing
+                    var culture = System.Globalization.CultureInfo.InvariantCulture;
 
-					double accelX = double.Parse(accelXText, culture);
-					double accelY = double.Parse(accelYText, culture);
-					double accelZ = double.Parse(accelZText, culture);
-					double weight = double.Parse(weightText, culture);
-					double altitude = double.Parse(altitudeText, culture);
-					double pitch = double.Parse(pitchText, culture);
-					double bank = double.Parse(bankText, culture);
+                    double accelX = double.Parse(accelXText, culture);
+                    double accelY = double.Parse(accelYText, culture);
+                    double accelZ = double.Parse(accelZText, culture);
+                    double weight = double.Parse(weightText, culture);
+                    double altitude = double.Parse(altitudeText, culture);
+                    double pitch = double.Parse(pitchText, culture);
+                    double bank = double.Parse(bankText, culture);
 
-					int calculatedChecksum = ComputeChecksum(altitude, pitch, bank);
+                    // Calculate expected checksum and verify packet integrity
+                    int calculatedChecksum = ComputeChecksum(altitude, pitch, bank);
 
-					// Verify checksum - packet is corrupted if mismatch
-					if (receivedChecksum != calculatedChecksum)
-					{
-						lock (lockObject)
-						{
-							// so increment dropped counter here
-							dropped++;
-						}
-						Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
-						return false;
-					}
+                    if (receivedChecksum != calculatedChecksum)
+                    {
+                        // Packet failed checksum validation - increment dropped counter
+                        lock (lockObject)
+                        {
+                            dropped++;
+                        }
+                        Console.WriteLine($"Checksum validation failed: received {receivedChecksum}, calculated {calculatedChecksum}");
+                        return false;
+                    }
 
-					// Checksum valid - parse all telemetry values
-					telemetry = new TelemetryData
-					{
-						TailNumber = tailNumber,
-						SequenceNumber = sequenceNumber,
-						Timestamp = DateTime.Parse(timestampText, culture, System.Globalization.DateTimeStyles.RoundtripKind),
-						AccelX = accelX,
-						AccelY = accelY,
-						AccelZ = accelZ,
-						Weight = weight,
-						Altitude = altitude,
-						Pitch = pitch,
-						Bank = bank,
-						Checksum = receivedChecksum
-					};
+                    // Checksum valid - create telemetry object with all parsed values
+                    telemetry = new TelemetryData
+                    {
+                        TailNumber = tailNumber,
+                        SequenceNumber = sequenceNumber,
+                        Timestamp = DateTime.Parse(timestampText, culture, System.Globalization.DateTimeStyles.RoundtripKind),
+                        AccelX = accelX,
+                        AccelY = accelY,
+                        AccelZ = accelZ,
+                        Weight = weight,
+                        Altitude = altitude,
+                        Pitch = pitch,
+                        Bank = bank,
+                        Checksum = receivedChecksum
+                    };
 
-					return true;
-				}
-				catch (Exception ex)
-				{
-					lock (lockObject)
-					{
-						// increment dropped counter on parse error
-						dropped++;
-					}
-					Console.WriteLine($"Error parsing packet: {ex.Message}");
-					return false;
-				}
-			}
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    // Parse error - increment dropped counter
+                    lock (lockObject)
+                    {
+                        dropped++;
+                    }
+                    Console.WriteLine($"Error parsing packet: {ex.Message}");
+                    return false;
+                }
+            }
 
-			/// <summary>
-			/// Computes the integer checksum using the altitude, pitch, and bank values.
-			/// </summary>
-			/// <param name="altitude">The altitude component used in the checksum calculation.</param>
-			/// <param name="pitch">The pitch component used in the checksum calculation.</param>
-			/// <param name="bank">The bank component used in the checksum calculation.</param>
-			/// <returns>The checksum value as an integer.</returns>
-			private static int ComputeChecksum(double altitude, double pitch, double bank)
-			{
-				double checksumDouble = (altitude + pitch + bank) / 3.0;
-				return (int)checksumDouble;
-			}
+            /*
+             Method: ComputeChecksum
+             Description: Calculates integer checksum from altitude, pitch, and bank values
+             Uses average of three values divided by 3 for validation
+             Parameters: double altitude, double pitch, double bank
+             Returns: int - computed checksum value
+             */
+            private static int ComputeChecksum(double altitude, double pitch, double bank)
+            {
+                double checksumDouble = (altitude + pitch + bank) / 3.0;
+                return (int)checksumDouble;
+            }
 
-			/// <summary>
-			/// Writes packet counts and the latest telemetry summary to the console for debugging.
-			/// </summary>
-			public override void RenderingDashbrdComponents()
+            /*
+             Method: RenderingDashbrdComponents
+             Description: Writes packet counts and telemetry to console for debugging
+             Displays current received/sent counts and latest telemetry summary
+             Parameters: None
+             Returns: void
+             */
+            public override void RenderingDashbrdComponents()
             {
                 int currentReceived = 0;
                 TelemetryData currentTelemetry = null;
@@ -894,16 +918,18 @@ namespace GroundTerminalApp
             }
         }
 
-        /// <summary>
-        /// Gets the collection of telemetry data entries.
-        /// </summary>
-        public List<TelemetryData> telemetryDataList { get; private set; } = new List<TelemetryData>(); 
+        // Collection for storing all received telemetry packets
+        public List<TelemetryData> telemetryDataList { get; private set; } = new List<TelemetryData>();
 
+        /*
+         Class: TelemetryData
+         Description: Model for aircraft telemetry packet with all sensor and orientation data
+         */
         public class TelemetryData
         {
             public string TailNumber { get; set; }      // Aircraft identifier
-			public uint SequenceNumber { get; set; }    // Packet sequence number
-			public DateTime Timestamp { get; set; }     // UTC recording time
+            public uint SequenceNumber { get; set; }    // Packet sequence number
+            public DateTime Timestamp { get; set; }     // UTC recording time
             public double AccelX { get; set; }          // X-axis acceleration (G-force)
             public double AccelY { get; set; }          // Y-axis acceleration (G-force)
             public double AccelZ { get; set; }          // Z-axis acceleration (G-force)
@@ -911,34 +937,40 @@ namespace GroundTerminalApp
             public double Altitude { get; set; }        // Altitude above sea level (feet)
             public double Pitch { get; set; }           // Pitch angle (degrees)
             public double Bank { get; set; }            // Bank angle (degrees)
-            public int Checksum { get; set; }           // Packet checksum (validated) i am adding this cus i want to display the checksum on dashboard
-
+            public int Checksum { get; set; }           // Packet checksum (validated)
         }
 
+        /*
+         Class: SideBarComponents
+         Description: Base class for sidebar navigation components
+         Used for routing between windows and pages
+         */
         public class SideBarComponents : DashBoardComponents
         {
-            // we will use this class to render between windows like to go to search query setting and so ion
+            // Navigation rendering implementation
         }
 
-
-        // I need a class level field that store and connet the app to the database. we already have the connection string in config file 
-        // so this class will be a storage for the connection string  just easier to to use and access  the connection string from other classes or methods
+        /*
+         Class: ServerConnector
+         Description: Static utility for managing database connections
+         Retrieves connection string from config file and creates SqlConnection instances
+         */
         public static class ServerConnector
         {
-            // this method is to store the connection string from config file
+            // Connection string read from configuration file
             private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["SoftwareQualityFinalProject"]?.ConnectionString;
 
-			/// <summary>
-			/// Creates and returns a new SQL connection using the configured connection string.
-			/// </summary>
-			/// <returns>A new SqlConnection instance for the FDMS database.</returns>
-			public static SqlConnection GetConnection()
+            /*
+             Method: GetConnection
+             Description: Creates and returns new SQL connection instance
+             Uses connection string from configuration for database access
+             Parameters: None
+             Returns: SqlConnection - new connection instance
+             */
+            public static SqlConnection GetConnection()
             {
                 return new SqlConnection(ConnectionString);
             }
         }
-
-        
-
     }
 }
