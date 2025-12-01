@@ -1,4 +1,14 @@
-﻿using System;
+﻿/* ======================================================================================================================== */
+/* FILE             : SearchingPageApp.xaml.cs                                                                              */
+/* PROJECT          : Software Quality Final Project Milestone 2                                                            */
+/* NAMESPACE        : GroundTerminalApp                                                                                    */
+/* PROGRAMMER       : Ermiyas (Endalkachew) Gulti, Mher Keshishian, Quang Minh Vu, Saje’- Antoine Rose                      */
+/* FIRST VERSION    : 2025-11-22                                                                                            */
+/* DESCRIPTION      : Defines the SearchingPageApp window for querying FDMS data and viewing live telemetry snapshots.     */
+/* ======================================================================================================================== */
+
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
