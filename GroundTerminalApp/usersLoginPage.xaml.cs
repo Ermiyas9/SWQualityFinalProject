@@ -20,7 +20,7 @@ using static GroundTerminalApp.FDMSDashboard;
 
 namespace GroundTerminalApp
 {
-    
+
     public partial class UsersLoginPage : Window
     {
         private System.Windows.Threading.DispatcherTimer loginSuccessTimer;
@@ -35,7 +35,7 @@ namespace GroundTerminalApp
             InitializeComponent();
             isAuthenticating = false;
             CheckDatabaseConnection();
-		}
+        }
 
         /*
         Method: BtnLogin_Click
@@ -287,43 +287,43 @@ namespace GroundTerminalApp
         */
         public static AppUser CurrentUser { get; set; }
 
-		// Inserts one log row into SystemLogs table
-		private void WriteSystemLog(string level, string source, string message)
-		{
-			try
-			{
+        // Inserts one log row into SystemLogs table
+        private void WriteSystemLog(string level, string source, string message)
+        {
+            try
+            {
                 SqlConnection conn = ServerConnector.GetConnection();
-				{
-					conn.Open();
+                {
+                    conn.Open();
 
-					string sql = @"
+                    string sql = @"
                 INSERT INTO dbo.SystemLogs ([Timestamp], [Level], [Source], [Message])
                 VALUES (@Timestamp, @Level, @Source, @Message);";
 
                     SqlCommand cmd = new SqlCommand(sql, conn);
-					{
-						cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
-						cmd.Parameters.AddWithValue("@Level", level);
-						cmd.Parameters.AddWithValue("@Source", source);
-						cmd.Parameters.AddWithValue("@Message", message);
+                    {
+                        cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@Level", level);
+                        cmd.Parameters.AddWithValue("@Source", source);
+                        cmd.Parameters.AddWithValue("@Message", message);
 
-						cmd.ExecuteNonQuery();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				try
-				{
-					File.AppendAllText(
-						"local_error_log.txt",
-						DateTime.Now.ToString("s") + " [LoginLogError] " + ex.Message + Environment.NewLine);
-				}
-				catch
-				{
-				}
-			}
-		}
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    File.AppendAllText(
+                        "local_error_log.txt",
+                        DateTime.Now.ToString("s") + " [LoginLogError] " + ex.Message + Environment.NewLine);
+                }
+                catch
+                {
+                }
+            }
+        }
 
         /*
         Method: UpdateDbConnectionStatus
@@ -379,34 +379,35 @@ namespace GroundTerminalApp
         Description: Data transfer object containing parsed login credentials
         */
         public class LoginCredentials
-    {
-        public string Username { get; set; }             // Parsed from TxtUsername
-        public string Password { get; set; }             // Parsed from TxtPassword
-        public bool IsValid { get; set; }                // True if both not empty
-    }
+        {
+            public string Username { get; set; }             // Parsed from TxtUsername
+            public string Password { get; set; }             // Parsed from TxtPassword
+            public bool IsValid { get; set; }                // True if both not empty
+        }
 
-    /*
-    Class: AuthenticationResult
-    Description: Data transfer object returned from database lookup
-    Contains success status, message, and authenticated user data
-    */
-    public class AuthenticationResult
-    {
-        public bool IsSuccess { get; set; }              // True if credentials valid
-        public string Message { get; set; }              // Status message for display
-        public AppUser AuthenticatedUser { get; set; }   // User data if authenticated
-    }
+        /*
+        Class: AuthenticationResult
+        Description: Data transfer object returned from database lookup
+        Contains success status, message, and authenticated user data
+        */
+        public class AuthenticationResult
+        {
+            public bool IsSuccess { get; set; }              // True if credentials valid
+            public string Message { get; set; }              // Status message for display
+            public AppUser AuthenticatedUser { get; set; }   // User data if authenticated
+        }
 
-    /*
-    Class: AppUser
-    Description: Data model for authenticated user from database
-    */
-    public class AppUser
-    {
-        public int UserId { get; set; }                  // User_ID from AppUser table
-        public string Username { get; set; }             // User_name from AppUser table
-        public int RoleId { get; set; }                  // appUserRole_ID for authorization
-        public bool IsActive { get; set; }               // Is_Active status from database
+        /*
+        Class: AppUser
+        Description: Data model for authenticated user from database
+        */
+        public class AppUser
+        {
+            public int UserId { get; set; }                  // User_ID from AppUser table
+            public string Username { get; set; }             // User_name from AppUser table
+            public int RoleId { get; set; }                  // appUserRole_ID for authorization
+            public bool IsActive { get; set; }               // Is_Active status from database
+        }
     }
 }
 
