@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/GroundTerminalApp/.sonarqube/conf
+/AircraftTransmitter/.sonarqube/conf/vbnet
+/AircraftTransmitter/.sonarqube/conf/cs
+/AircraftTransmitter/.sonarqube/conf/1
+/AircraftTransmitter/.sonarqube/conf
