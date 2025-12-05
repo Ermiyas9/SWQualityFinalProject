@@ -237,8 +237,8 @@ namespace GroundTerminalApp.Tests
             Assert.IsTrue(result1, "First packet should process successfully");
             Assert.IsTrue(result2, "Second packet should process successfully");
             Assert.AreEqual(2, packetCounter.Received, "Received counter should be 2");
-            Assert.AreEqual(1, seqAfterFirst, "First packet sequence should be 1");
-            Assert.AreEqual(2, seqAfterSecond, "Second packet sequence should be 2");
+            Assert.AreEqual<uint>(1u, seqAfterFirst, "First packet sequence should be 1");
+            Assert.AreEqual<uint>(2u, seqAfterSecond, "Second packet sequence should be 2");
             Assert.AreEqual(0, packetCounter.Dropped, "Dropped counter should remain 0");
         }
     }

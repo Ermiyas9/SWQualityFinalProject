@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroundTerminalApp", "GroundTerminalApp.csproj", "{0EB6BDA7-8D13-436B-AB84-1ED289F188BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroundTerminalApp.Tests", "GroundTerminalApp.Tests\GroundTerminalApp.Tests.csproj", "{CED5D149-D424-AAE5-78E9-686DEC93B629}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0EB6BDA7-8D13-436B-AB84-1ED289F188BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EB6BDA7-8D13-436B-AB84-1ED289F188BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EB6BDA7-8D13-436B-AB84-1ED289F188BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CED5D149-D424-AAE5-78E9-686DEC93B629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED5D149-D424-AAE5-78E9-686DEC93B629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED5D149-D424-AAE5-78E9-686DEC93B629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CED5D149-D424-AAE5-78E9-686DEC93B629}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
