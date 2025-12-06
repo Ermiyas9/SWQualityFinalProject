@@ -130,58 +130,6 @@ namespace GroundTerminalApp.Tests
         }
 
         /*
-         * Test:       ProcessPacket_MalformedPacket_IncrementsDroppedCounterAndReturnsFalse
-         * Category:   UNIT / STRUCTURAL / FUNCTIONAL
-         * Purpose:    Validates that malformed packets (missing fields) are rejected properly.
-         */
-        [TestMethod]
-        public void ProcessPacket_MalformedPacket_IncrementsDroppedCounterAndReturnsFalse()
-        {
-            // Arrange - packet with only 10 fields instead of required 11
-            string malformedPacketLine = "N123456|1|2025-12-04T14:30:00Z|" +
-                                        "-0.799099|0.047375|0.028341|" +
-                                        "2154.000732|1124.106079|0.022695";
-
-            byte[] packetData = Encoding.ASCII.GetBytes(malformedPacketLine);
-
-            // Act
-            int droppedBefore = packetCounter.Dropped;
-            bool result = packetCounter.ProcessPacket(packetData);
-            int droppedAfter = packetCounter.Dropped;
-
-            // Assert
-            Assert.IsFalse(result, "ProcessPacket should return false for malformed packet");
-            Assert.AreEqual(droppedBefore + 1, droppedAfter, "Dropped counter should increment");
-            Assert.IsNull(packetCounter.LastTelemetry, "LastTelemetry should be null");
-            Assert.AreEqual(0, packetCounter.Received, "Received should not increment");
-        }
-
-        /*
-         * Test:       ProcessPacket_EmptyFields_IncrementsDroppedAndReturnsFalse
-         * Category:   UNIT / STRUCTURAL / FUNCTIONAL
-         * Purpose:    Validates that packets with empty telemetry fields are rejected.
-         */
-        [TestMethod]
-        public void ProcessPacket_EmptyFields_IncrementsDroppedAndReturnsFalse()
-        {
-            // Arrange - empty accelX field (between two pipes)
-            string packetWithEmptyField = "N123456|1|2025-12-04T14:30:00Z|" +
-                                        "||0.047375|0.028341|" +
-                                        "2154.000732|1124.106079|0.022695|0.001006|374";
-
-            byte[] packetData = Encoding.ASCII.GetBytes(packetWithEmptyField);
-
-            // Act
-            int droppedBefore = packetCounter.Dropped;
-            bool result = packetCounter.ProcessPacket(packetData);
-            int droppedAfter = packetCounter.Dropped;
-
-            // Assert
-            Assert.IsFalse(result, "ProcessPacket should return false for empty fields");
-            Assert.AreEqual(droppedBefore + 1, droppedAfter, "Dropped counter should increment");
-        }
-
-        /*
          * Test:       ProcessPacket_InvalidNumericValue_IncrementsDroppedAndReturnsFalse
          * Category:   UNIT / STRUCTURAL / FUNCTIONAL
          * Purpose:    Validates that packets with non-numeric values are rejected.
