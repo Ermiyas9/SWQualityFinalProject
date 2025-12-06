@@ -15,7 +15,8 @@ namespace GroundTerminalApp.Tests
     [TestClass]
     public class UsersLoginPageTests
     {
-        private TestDatabaseHelper dbHelper;
+        private TestDatabaseHelper dbHelper = new();
+
 
         [TestInitialize]
         public void TestInitialize()
@@ -147,11 +148,10 @@ namespace GroundTerminalApp.Tests
 
         public void SetupTestDatabase()
         {
-            using (SqlConnection conn = new SqlConnection(TEST_CONNECTION_STRING))
-            {
-                conn.Open();
+            using SqlConnection conn = new(TEST_CONNECTION_STRING);
+            conn.Open();
 
-                string createTableQuery = @"
+            string createTableQuery = @"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AppUser')
                     CREATE TABLE AppUser (
                         UserId INT IDENTITY(1,1) PRIMARY KEY,
@@ -161,12 +161,12 @@ namespace GroundTerminalApp.Tests
                         IsActive BIT NOT NULL DEFAULT 1
                     )";
 
-                using (SqlCommand cmd = new SqlCommand(createTableQuery, conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
+            using (SqlCommand cmd = new(createTableQuery, conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
 
-                string createLogsQuery = @"
+            string createLogsQuery = @"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SystemLogs')
                     CREATE TABLE SystemLogs (
                         LogId INT IDENTITY(1,1) PRIMARY KEY,
@@ -176,10 +176,9 @@ namespace GroundTerminalApp.Tests
                         Message NVARCHAR(MAX)
                     )";
 
-                using (SqlCommand cmd = new SqlCommand(createLogsQuery, conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
+            using (SqlCommand cmd = new(createLogsQuery, conn))
+            {
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -192,35 +191,27 @@ namespace GroundTerminalApp.Tests
 
         public void CreateTestUser(string username, string password, bool isActive)
         {
-            using (SqlConnection conn = new SqlConnection(TEST_CONNECTION_STRING))
-            {
-                conn.Open();
+            using SqlConnection conn = new(TEST_CONNECTION_STRING);
+            conn.Open();
 
-                string insertQuery = @"
+            string insertQuery = @"
                     INSERT INTO AppUser (Username, [Password], RoleId, IsActive)
                     VALUES (@Username, @Password, 1, @IsActive)";
 
-                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Username", username);
-                    cmd.Parameters.AddWithValue("@Password", password);
-                    cmd.Parameters.AddWithValue("@IsActive", isActive);
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            using SqlCommand cmd = new(insertQuery, conn);
+            cmd.Parameters.AddWithValue("@Username", username);
+            cmd.Parameters.AddWithValue("@Password", password);
+            cmd.Parameters.AddWithValue("@IsActive", isActive);
+            cmd.ExecuteNonQuery();
         }
 
         public void CleanupTestDatabase()
         {
-            using (SqlConnection conn = new SqlConnection(TEST_CONNECTION_STRING))
-            {
-                conn.Open();
-                // Clean both tables
-                using (SqlCommand cmd = new SqlCommand("DELETE FROM AppUser; DELETE FROM SystemLogs;", conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            using SqlConnection conn = new(TEST_CONNECTION_STRING);
+            conn.Open();
+            // Clean both tables
+            using SqlCommand cmd = new("DELETE FROM AppUser; DELETE FROM SystemLogs;", conn);
+            cmd.ExecuteNonQuery();
         }
     }
 }

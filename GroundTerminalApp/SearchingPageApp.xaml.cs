@@ -32,6 +32,11 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using static GroundTerminalApp.FDMSDashboard;
 
+
+
+#pragma warning disable IDE0044 // Make field readonly
+
+
 namespace GroundTerminalApp
 {
     /// <summary>
@@ -172,40 +177,40 @@ namespace GroundTerminalApp
          */
         private void LoadData(string userInput)
         {
-            List<string> displayItems = new List<string>();
+            //List<string> displayItems = new List<string>();
 
             if (GetTargetTableFromInput(userInput) == 1)
             {
                 // Extract numeric portion from Flight query format (Fxxx)
-                char firstCharacter = userInput[0];
+                //char firstCharacter = userInput[0];
                 string theIDPart = userInput.Substring(1);
                 int idPart = ParseInt(theIDPart);
 
                 // Query Flight table with parsed ID
-                getFlightTableData(idPart);
-                updateUI(userInput);
+                GetFlightTableData(idPart);
+                UpdateUI(userInput);
             }
             else if (GetTargetTableFromInput(userInput) == 2)
             {
                 // Extract numeric portion from Channel query format (Cxxx)
-                char firstCharacter = userInput[0];
+                //char firstCharacter = userInput[0];
                 string theIDPart = userInput.Substring(1);
                 int idPart = ParseInt(theIDPart);
 
                 // Query Channel table with parsed ID
-                getChannelTableData(idPart);
-                updateUI(userInput);
+                GetChannelTableData(idPart);
+                UpdateUI(userInput);
             }
             else if (GetTargetTableFromInput(userInput) == 3)
             {
                 // Extract numeric portion from Telemetry query format (Txxx)
-                char firstCharacter = userInput[0];
+                //char firstCharacter = userInput[0];
                 string theIDPart = userInput.Substring(1);
                 int idPart = ParseInt(theIDPart);
 
                 // Query AircraftTransmitterPackets table with parsed ID
-                getDataFrmAircraftTransmitterPackets(idPart);
-                updateUI(userInput);
+                GetDataFrmAircraftTransmitterPackets(idPart);
+                UpdateUI(userInput);
             }
             else
             {
@@ -222,7 +227,7 @@ namespace GroundTerminalApp
          Parameters: string userInput
          Returns: void
          */
-        private void updateUI(string userInput)
+        private void UpdateUI(string userInput)
         {
             int returnedValue = GetTargetTableFromInput(userInput);
             var displayItems = new List<string>();
@@ -301,18 +306,6 @@ namespace GroundTerminalApp
             this.DataContext = displayValues;
         }
 
-        /*
-         Method: NormalizeAltitude
-         Description: Scales altitude value to chart display range
-         Converts raw altitude to normalized 0-140 scale for graphing
-         Parameters: double altitude
-         Returns: double - normalized altitude value
-         */
-        private double NormalizeAltitude(double altitude)
-        {
-            double maxAltitude = 40000;
-            return (altitude / maxAltitude) * 140;
-        }
 
         /*
          Method: ParseInt
@@ -321,7 +314,7 @@ namespace GroundTerminalApp
          Parameters: string valueOfCell
          Returns: int - parsed integer or 0 if invalid
          */
-        int ParseInt(string valueOfCell)
+        public int ParseInt(string valueOfCell)
         {
             // Reject null, empty, whitespace, or dash-only strings
             if (string.IsNullOrWhiteSpace(valueOfCell) || valueOfCell.Trim() == "-")
@@ -348,20 +341,20 @@ namespace GroundTerminalApp
          */
         private int GetTargetTableFromInput(string userInput)
         {
-            char firstCharacter = userInput[0];
+            //char firstCharacter = userInput[0];
 
             // Route to appropriate table based on validated input prefix
-            if (ParseUserInput(userInput, firstCharacter))
+            if (ParseUserInput(userInput))
             {
-                if (firstCharacter == 'F')
+                if (userInput[0] == 'F')
                 {
                     return 1;
                 }
-                else if (firstCharacter == 'C')
+                else if (userInput[0] == 'C')
                 {
                     return 2;
                 }
-                else if (firstCharacter == 'T')
+                else if (userInput[0] == 'T')
                 {
                     return 3;
                 }      
@@ -377,7 +370,7 @@ namespace GroundTerminalApp
          Parameters: string userInput, char firstCharacter
          Returns: bool - true if input is valid, false otherwise
          */
-        private bool ParseUserInput(string userInput, char firstCharacter)
+        private bool ParseUserInput(string userInput)
         {
             // Reject null or empty input
             if (string.IsNullOrWhiteSpace(userInput))
@@ -387,9 +380,9 @@ namespace GroundTerminalApp
             }
 
             // Extract and validate first character
-            firstCharacter = userInput[0];
+            //firstCharacter = userInput[0];
 
-            if (firstCharacter == 'F' || firstCharacter == 'T' || firstCharacter == 'C')
+            if (userInput[0] == 'F' || userInput[0] == 'T' || userInput[0] == 'C')
             {
                 // Valid prefix found
                 return true;
@@ -409,7 +402,7 @@ namespace GroundTerminalApp
          Parameters: int userInputIDPart
          Returns: void
          */
-        public void getFlightTableData(int userInputIDPart)
+        public void GetFlightTableData(int userInputIDPart)
         {
             string sqlQuery = $@"
                                 SELECT FlightId, AircraftId, FlightCode, DepartureTime, ArrivalTime
@@ -457,7 +450,7 @@ namespace GroundTerminalApp
          Parameters: int userInputIDPart
          Returns: void
          */
-        private void getDataFrmAircraftTransmitterPackets(int userInputIDPart)
+        private void GetDataFrmAircraftTransmitterPackets(int userInputIDPart)
         {
             string sqlQuery = @"
                                 SELECT * 
@@ -502,34 +495,53 @@ namespace GroundTerminalApp
          Parameters: int userInputIDPart
          Returns: void
          */
-        public void getChannelTableData(int userInputIDPart)
+        public void GetChannelTableData(int userInputIDPart)
         {
             string sqlQuery = @"
-                                SELECT ChannelId, ChannelName, ChannelCode, Description 
-                                FROM Channel 
+                                SELECT ChannelId, ChannelName, ChannelCode, Description
+                                FROM Channel
                                 WHERE ChannelId = @ChannelId";
 
-            using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
+            try
             {
-                // Parameterize query to prevent SQL injection
-                cmd.Parameters.AddWithValue("@ChannelId", userInputIDPart);
+                // Ensure connection exists and is open
+                if (serverConnectionForSearchingPage == null)
+                    throw new InvalidOperationException("Database connection is null.");
 
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                if (serverConnectionForSearchingPage.State != ConnectionState.Open)
+                    serverConnectionForSearchingPage.Open();
+
+                using (var cmd = new SqlCommand(sqlQuery, serverConnectionForSearchingPage))
                 {
-                    while (reader.Read())
-                    {
-                        // Extract and type-cast database values
-                        ChannelInfo channel = new ChannelInfo
-                        {
-                            ChannelId = reader.GetInt32(reader.GetOrdinal("ChannelID")),
-                            ChannelName = reader["ChannelName"].ToString(),
-                            ChannelCode = reader["ChannelCode"].ToString(),
-                            Description = reader["Description"].ToString()
-                        };
+                    cmd.Parameters.AddWithValue("@ChannelId", userInputIDPart);
 
-                        channelInfoList.Add(channel);
+                    channelInfoList.Clear();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var channel = new ChannelInfo
+                            {
+                                // Use the exact column name from the SELECT
+                                ChannelId = reader.GetInt32(reader.GetOrdinal("ChannelId")),
+                                ChannelName = reader.IsDBNull(reader.GetOrdinal("ChannelName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ChannelName")),
+                                ChannelCode = reader.IsDBNull(reader.GetOrdinal("ChannelCode")) ? string.Empty : reader.GetString(reader.GetOrdinal("ChannelCode")),
+                                Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? string.Empty : reader.GetString(reader.GetOrdinal("Description"))
+                            };
+
+                            channelInfoList.Add(channel);
+                        }
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show($"Database query failed: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unexpected error: {ex.Message}");
             }
         }
 

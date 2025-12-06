@@ -17,7 +17,7 @@ namespace GroundTerminalApp.Tests
     [TestClass]
     public class PacketParsingTests
     {
-        private FDMSDashboard.TheCounterComponent packetCounter;
+        private FDMSDashboard.TheCounterComponent packetCounter = new();
 
         [TestInitialize]
         public void TestInitialize()
@@ -38,7 +38,7 @@ namespace GroundTerminalApp.Tests
             // Arrange
             string tailNumber = "N123456";
             uint sequenceNumber = 1;
-            DateTime timestamp = new DateTime(2025, 12, 4, 14, 30, 0, DateTimeKind.Utc);
+            DateTime timestamp = new(2025, 12, 4, 14, 30, 0, DateTimeKind.Utc);
             double accelX = -0.799099;
             double accelY = 0.047375;
             double accelZ = 0.028341;
@@ -92,7 +92,7 @@ namespace GroundTerminalApp.Tests
             // Arrange
             string tailNumber = "N654321";
             uint sequenceNumber = 2;
-            DateTime timestamp = new DateTime(2025, 12, 4, 14, 31, 0, DateTimeKind.Utc);
+            DateTime timestamp = new(2025, 12, 4, 14, 31, 0, DateTimeKind.Utc);
             double accelX = -0.450000;
             double accelY = 0.120000;
             double accelZ = 0.030000;

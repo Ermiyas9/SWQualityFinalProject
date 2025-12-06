@@ -123,7 +123,7 @@ namespace GroundTerminalApp
          */
         private void BtnSystemLogs_Click(object sender, RoutedEventArgs e)
         {
-            logsPage logsPage = new logsPage(this);
+            LogsPage logsPage = new LogsPage(this);
             logsPage.Owner = this;
             logsPage.Show();
         }

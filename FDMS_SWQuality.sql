@@ -61,6 +61,18 @@ IF OBJECT_ID('dbo.Channel', 'U') IS NOT NULL
     DROP TABLE dbo.Channel;
 GO
 
+IF OBJECT_ID('dbo.SystemLogs', 'U') IS NOT NULL
+    DROP TABLE dbo.SystemLogs;
+GO
+
+IF OBJECT_ID('dbo.SystemLogsArchive', 'U') IS NOT NULL
+    DROP TABLE dbo.SystemLogsArchive;
+GO
+
+IF OBJECT_ID('dbo.AppUser', 'U') IS NOT NULL
+    DROP TABLE dbo.AppUser;
+GO
+
 /* ------------------------------------------------------------
    2. Create tables
    ------------------------------------------------------------ */
