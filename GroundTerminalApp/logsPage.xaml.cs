@@ -18,9 +18,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
+
+
+#pragma warning disable IDE0044 // Make field readonly
+
 namespace GroundTerminalApp
 {
-    public partial class logsPage : Window
+    public partial class LogsPage : Window
     {
         private const int AUTO_REFRESH_INTERVAL = 30; // seconds
 
@@ -32,9 +36,9 @@ namespace GroundTerminalApp
 
         private bool isConnected = false;
         // Reference to SearchingPageApp for navigation
-        private SearchingPageApp searchingPage;
+        //private SearchingPageApp searchingPage;
 
-        SearchingPageApp searchingPageInstance;
+        //SearchingPageApp searchingPageInstance;
         FDMSDashboard dashboard;
 
         /*
@@ -44,7 +48,7 @@ namespace GroundTerminalApp
          Parameters: FDMSDashboard dashboardInstance
          Returns: void
          */
-        public logsPage(FDMSDashboard dashboardInstance)
+        public LogsPage(FDMSDashboard dashboardInstance)
         {
             InitializeComponent();
             InitializeData();
@@ -53,7 +57,7 @@ namespace GroundTerminalApp
 
             CmbLogLevel.SelectedIndex = 0;
 
-            searchingPage = searchingPageInstance;
+            //searchingPage = searchingPageInstance;
             dashboard = dashboardInstance;
         }
 
@@ -70,7 +74,7 @@ namespace GroundTerminalApp
             filteredLogEntries = new ObservableCollection<LogEntry>();
             LogsDataGrid.ItemsSource = filteredLogEntries;
 
-            searchingPage = searchingPageInstance;
+            //searchingPage = searchingPageInstance;
         }
 
         /*
