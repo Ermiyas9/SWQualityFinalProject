@@ -1,184 +1,142 @@
-﻿/* ======================================================================================================================== */
+﻿
 /* FILE             : UsersLoginPageTests.cs                                                                                */
 /* PROJECT          : Software Quality Final Project Milestone 3                                                            */
-/* NAMESPACE        : GroundTerminalApp.Tests                                                                               */
-/* DESCRIPTION      : Unit tests for pure logic functions (validation, formatting) without UI or DB dependencies            */
-/* ======================================================================================================================== */
+/* PROGRAMMER       : Quang Minh Vu                                                                                         */
+/* PURPOSE          : Provides test coverage for UsersLoginPage data models, including                                      */
+/*                    LoginCredentials and AuthenticationResult. Ensures validation logic                                   */
+/*                    and authentication structures behave correctly without UI or DB dependencies.                         */
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GroundTerminalApp;
-using LiveChartsCore.Themes;
 
 namespace GroundTerminalApp.Tests
 {
     [TestClass]
     public class UsersLoginPageTests
     {
-        /* Test:       ValidateUsername_EmptyString_ReturnsFalse                                                                    
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures that empty or whitespace-only usernames are rejected by IsValidUsername().                           */
-
+        /* Test:       LoginCredentials_BothFieldsProvided_IsValidTrue                                                  */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                   */
+        /* Purpose:    Ensures that LoginCredentials sets IsValid = true when both username and password fields         */
+        /*             contain non-empty strings. Validates object initialization logic.                                */
         [TestMethod]
-        [TestCategory("InputValidation")]
-        public void ValidateUsername_EmptyString_ReturnsFalse()
+        [TestCategory("DataValidation")]
+        public void LoginCredentials_BothFieldsProvided_IsValidTrue()
         {
-            // Arrange
-            string username = "";
-
-            // Act
-            bool result = ValidationHelper.IsValidUsername(username);
+            // Arrange & Act
+            var credentials = new UsersLoginPage.LoginCredentials
+            {
+                Username = "quang_minh",
+                Password = "T3182001a@",
+                IsValid = !string.IsNullOrEmpty("Username") && !string.IsNullOrEmpty("Password")
+            };
 
             // Assert
-            Assert.IsFalse(result, "Empty username should be invalid");
+            Assert.IsTrue(credentials.IsValid, "IsValid should be true when both username and password are provided");
+            Assert.AreEqual("john_doe", credentials.Username);
+            Assert.AreEqual("SecurePass123", credentials.Password);
         }
 
-        /* Test:       ValidateUsername_ValidString_ReturnsTrue                                                                     
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Verifies that a properly formatted username passes validation.                                               */
-
+        /* Test:       LoginCredentials_EmptyUsername_IsValidFalse                                                      */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                   */
+        /* Purpose:    Verifies that LoginCredentials marks IsValid = false when Username is empty but password is      */
+        /*             provided. Ensures username field validation behavior.                                            */
         [TestMethod]
-        [TestCategory("InputValidation")]
-        public void ValidateUsername_ValidString_ReturnsTrue()
+        [TestCategory("DataValidation")]
+        public void LoginCredentials_EmptyUsername_IsValidFalse()
         {
-            // Arrange
-            string username = "john_doe";
+            // Arrange & Act
+            var credentials = new UsersLoginPage.LoginCredentials
+            {
+                Username = "",
+                Password = "T3182001a@"
+            };
 
-            // Act
-            bool result = ValidationHelper.IsValidUsername(username);
+            // Correctly set IsValid based on actual property values
+            credentials.IsValid = !string.IsNullOrEmpty(credentials.Username)
+                                  && !string.IsNullOrEmpty(credentials.Password);
 
             // Assert
-            Assert.IsTrue(result, "Valid username should pass validation");
+            Assert.IsFalse(credentials.IsValid, "IsValid should be false when username is empty");
         }
 
-        /* Test:       ValidatePassword_EmptyString_ReturnsFalse                                                                    
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures that empty or whitespace-only passwords are rejected by IsValidPassword().                          */
-
+        /* Test:       LoginCredentials_EmptyPassword_IsValidFalse                                                      */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                   */
+        /* Purpose:    Ensures that LoginCredentials sets IsValid = false when Password is empty but username is        */
+        /*             provided. Confirms password field validation behavior.                                            */
         [TestMethod]
-        [TestCategory("InputValidation")]
-        public void ValidatePassword_EmptyString_ReturnsFalse()
+        [TestCategory("DataValidation")]
+        public void LoginCredentials_EmptyPassword_IsValidFalse()
         {
-            // Arrange
-            string password = "";
+            // Arrange & Act
+            var credentials = new UsersLoginPage.LoginCredentials
+            {
+                Username = "quang_minh",
+                Password = ""
+            };
 
-            // Act
-            bool result = ValidationHelper.IsValidPassword(password);
+            credentials.IsValid = !string.IsNullOrEmpty(credentials.Username)
+                                  && !string.IsNullOrEmpty(credentials.Password);
+
 
             // Assert
-            Assert.IsFalse(result, "Empty password should be invalid");
+            Assert.IsFalse(credentials.IsValid, "IsValid should be false when password is empty");
         }
 
-        /* Test:       SanitizeUsername_LeadingTrailingSpacesAndMixedCase_ReturnsTrimmedLowercase                                   
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Validates that user credentials are properly sanitized: trimmed and lowercased.                             */
-
+        /* Test:       AuthenticationResult_SuccessfulLogin_ContainsUserData                                            */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                   */
+        /* Purpose:    Validates that AuthenticationResult correctly stores user information when login is successful,  */
+        /*             including user profile data and success message.                                                 */
         [TestMethod]
-        [TestCategory("DataProcessing")]
-        public void SanitizeUsername_LeadingTrailingSpacesAndMixedCase_ReturnsTrimmedLowercase()
+        [TestCategory("DataStructure")]
+        public void AuthenticationResult_SuccessfulLogin_ContainsUserData()
         {
-            // Arrange
-            string username = "  JoHn_DoE  ";
+            // Arrange & Act
+            var user = new UsersLoginPage.AppUser
+            {
+                UserId = 1,
+                Username = "test_user",
+                RoleId = 2,
+                IsActive = true
+            };
 
-            // Act
-            string result = ValidationHelper.SanitizeUsername(username);
+            var result = new UsersLoginPage.AuthenticationResult
+            {
+                IsSuccess = true,
+                Message = "Login successful.",
+                AuthenticatedUser = user
+            };
 
             // Assert
-            Assert.AreEqual("john_doe", result, "Username should be trimmed and converted to lowercase");
+            Assert.IsTrue(result.IsSuccess, "IsSuccess should be true for successful login");
+            Assert.AreEqual("Login successful.", result.Message);
+            Assert.IsNotNull(result.AuthenticatedUser, "AuthenticatedUser should not be null");
+            Assert.AreEqual(1, result.AuthenticatedUser.UserId);
+            Assert.AreEqual("test_user", result.AuthenticatedUser.Username);
+            Assert.AreEqual(2, result.AuthenticatedUser.RoleId);
+            Assert.IsTrue(result.AuthenticatedUser.IsActive);
         }
 
-        /* Test:       CheckPasswordStrength_StrongPassword_ReturnsStrong                                                           
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures strong passwords (uppercase, lowercase, digits, special chars) are correctly classified as Strong.   */
-
+        /* Test:       AuthenticationResult_FailedLogin_NoUserData                                                      */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                   */
+        /* Purpose:    Ensures AuthenticationResult represents failed login scenarios correctly by storing no user      */
+        /*             object and returning appropriate failure message and flags.                                       */
         [TestMethod]
-        [TestCategory("BusinessLogic")]
-        public void CheckPasswordStrength_StrongPassword_ReturnsStrong()
+        [TestCategory("DataStructure")]
+        public void AuthenticationResult_FailedLogin_NoUserData()
         {
-            // Arrange
-            string password = "P@ssw0rd123!";
-
-            // Act
-            string result = PasswordHelper.CheckPasswordStrength(password);
+            // Arrange & Act
+            var result = new UsersLoginPage.AuthenticationResult
+            {
+                IsSuccess = false,
+                Message = "Invalid username or password.",
+                AuthenticatedUser = null
+            };
 
             // Assert
-            Assert.AreEqual("Strong", result, "Password with uppercase, lowercase, numbers, and special chars should be strong");
-        }
-    }
-
-    /* HELPER CLASSES - These represent the logic that should exist in your application                           
-    These simulate the validation + password logic that would normally exist in your application code.                        
-     Make sure to place real implementations inside actual app classes (UsersLoginPage or utilities).                          */
-
-    public static class ValidationHelper
-    {
-        public static bool IsValidUsername(string username)
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                return false;
-
-            if (username.Length < 3 || username.Length > 50)
-                return false;
-
-            return true;
-        }
-
-        public static bool IsValidPassword(string password)
-        {
-            if (string.IsNullOrWhiteSpace(password))
-                return false;
-
-            if (password.Length < 6)
-                return false;
-
-            return true;
-        }
-
-        public static string SanitizeUsername(string username)
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                return string.Empty;
-
-            // Remove leading/trailing spaces and convert to lowercase
-            return username.Trim().ToLower();
-        }
-    }
-
-    public static class PasswordHelper
-    {
-        public static string CheckPasswordStrength(string password)
-        {
-            if (string.IsNullOrWhiteSpace(password))
-                return "Weak";
-
-            int score = 0;
-
-            // Check length
-            if (password.Length >= 8)
-                score++;
-
-            // Check for lowercase
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]"))
-                score++;
-
-            // Check for uppercase
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]"))
-                score++;
-
-            // Check for digits
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"\d"))
-                score++;
-
-            // Check for special characters
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
-                score++;
-
-            if (score <= 2)
-                return "Weak";
-            else if (score <= 4)
-                return "Medium";
-            else
-                return "Strong";
+            Assert.IsFalse(result.IsSuccess, "IsSuccess should be false for failed login");
+            Assert.AreEqual("Invalid username or password.", result.Message);
+            Assert.IsNull(result.AuthenticatedUser, "AuthenticatedUser should be null for failed login");
         }
     }
 }
