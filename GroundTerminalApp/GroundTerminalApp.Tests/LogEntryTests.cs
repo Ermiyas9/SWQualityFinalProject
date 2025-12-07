@@ -53,17 +53,16 @@ namespace GroundTerminalApp.Tests
 			// Arrange
 			var entry = new LogEntry();
 			bool eventRaised = false;
-            string? raisedPropertyName = null;
+			string raisedPropertyName = null;
 
-            entry.PropertyChanged += (_, e) =>
-            {
-                eventRaised = true;
-                raisedPropertyName = e.PropertyName;
-            };
+			entry.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
+			{
+				eventRaised = true;
+				raisedPropertyName = e.PropertyName;
+			};
 
-
-            // Act
-            entry.Message = "Test log message";
+			// Act
+			entry.Message = "Test log message";
 
 			// Assert
 			Assert.IsTrue(eventRaised, "Setting Message should raise PropertyChanged.");
