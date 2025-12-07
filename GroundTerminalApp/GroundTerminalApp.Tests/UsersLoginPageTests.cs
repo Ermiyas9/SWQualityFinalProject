@@ -1,9 +1,10 @@
-﻿/* ======================================================================================================================== */
-/* FILE             : UsersLoginPageTests.cs                                                                                */
-/* PROJECT          : Software Quality Final Project Milestone 3                                                            */
-/* NAMESPACE        : GroundTerminalApp.Tests                                                                               */
-/* DESCRIPTION      : Unit tests for pure logic functions (validation, formatting) without UI or DB dependencies            */
-/* ======================================================================================================================== */
+﻿/*
+ * Filename:    UsersLoginPageTests.cs
+ * By:          Quang Minh Vu
+ * Date:        December 6, 2025
+ * Description: Unit tests for the UsersLoginPage model used by the usersPage window.
+ *              These tests focus on the logic of the user login page, such as password validation and user creation.
+ */
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
