@@ -8,7 +8,6 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GroundTerminalApp;
-using LiveChartsCore.Themes;
 
 namespace GroundTerminalApp.Tests
 {
@@ -16,9 +15,8 @@ namespace GroundTerminalApp.Tests
     public class UsersLoginPageTests
     {
         /* Test:       ValidateUsername_EmptyString_ReturnsFalse                                                                    
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures that empty or whitespace-only usernames are rejected by IsValidUsername().                           */
-
+         Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
+         Purpose:    Ensures that empty or whitespace-only usernames are rejected by IsValidUsername().                           */
         [TestMethod]
         [TestCategory("InputValidation")]
         public void ValidateUsername_EmptyString_ReturnsFalse()
@@ -33,10 +31,9 @@ namespace GroundTerminalApp.Tests
             Assert.IsFalse(result, "Empty username should be invalid");
         }
 
-        /* Test:       ValidateUsername_ValidString_ReturnsTrue                                                                     
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Verifies that a properly formatted username passes validation.                                               */
-
+        /* Test:       ValidateUsername_ValidString_ReturnsTrue                                                                     */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              */
+        /* Purpose:    Verifies that a properly formatted username passes validation.                                               */
         [TestMethod]
         [TestCategory("InputValidation")]
         public void ValidateUsername_ValidString_ReturnsTrue()
@@ -51,10 +48,9 @@ namespace GroundTerminalApp.Tests
             Assert.IsTrue(result, "Valid username should pass validation");
         }
 
-        /* Test:       ValidatePassword_EmptyString_ReturnsFalse                                                                    
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures that empty or whitespace-only passwords are rejected by IsValidPassword().                          */
-
+        /* Test:       ValidatePassword_EmptyString_ReturnsFalse                                                                    */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              */
+        /* Purpose:    Ensures that empty or whitespace-only passwords are rejected by IsValidPassword().                          */
         [TestMethod]
         [TestCategory("InputValidation")]
         public void ValidatePassword_EmptyString_ReturnsFalse()
@@ -69,10 +65,9 @@ namespace GroundTerminalApp.Tests
             Assert.IsFalse(result, "Empty password should be invalid");
         }
 
-        /* Test:       SanitizeUsername_LeadingTrailingSpacesAndMixedCase_ReturnsTrimmedLowercase                                   
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Validates that user credentials are properly sanitized: trimmed and lowercased.                             */
-
+        /* Test:       SanitizeUsername_LeadingTrailingSpacesAndMixedCase_ReturnsTrimmedLowercase                                   */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              */
+        /* Purpose:    Validates that user credentials are properly sanitized: trimmed and lowercased.                             */
         [TestMethod]
         [TestCategory("DataProcessing")]
         public void SanitizeUsername_LeadingTrailingSpacesAndMixedCase_ReturnsTrimmedLowercase()
@@ -87,10 +82,9 @@ namespace GroundTerminalApp.Tests
             Assert.AreEqual("john_doe", result, "Username should be trimmed and converted to lowercase");
         }
 
-        /* Test:       CheckPasswordStrength_StrongPassword_ReturnsStrong                                                           
-           Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              
-           Purpose:    Ensures strong passwords (uppercase, lowercase, digits, special chars) are correctly classified as Strong.   */
-
+        /* Test:       CheckPasswordStrength_StrongPassword_ReturnsStrong                                                           */
+        /* Category:   UNIT / STRUCTURAL / FUNCTIONAL                                                                              */
+        /* Purpose:    Ensures strong passwords (uppercase, lowercase, digits, special chars) are correctly classified as Strong.   */
         [TestMethod]
         [TestCategory("BusinessLogic")]
         public void CheckPasswordStrength_StrongPassword_ReturnsStrong()
@@ -106,12 +100,15 @@ namespace GroundTerminalApp.Tests
         }
     }
 
-    /* HELPER CLASSES - These represent the logic that should exist in your application                           
-    These simulate the validation + password logic that would normally exist in your application code.                        
-     Make sure to place real implementations inside actual app classes (UsersLoginPage or utilities).                          */
+    /* HELPER CLASSES                                                                                                           */
+    /* These simulate the validation + password logic that would normally exist in your application code.                        */
+    /* Make sure to place real implementations inside actual app classes (UsersLoginPage or utilities).                          */
 
     public static class ValidationHelper
     {
+        /* Function:    IsValidUsername                                                                                  */
+        /* Purpose:     Ensures username is non-empty and within allowed character length.                                */
+        /* Returns:     true if valid, otherwise false.                                                                    */
         public static bool IsValidUsername(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -123,6 +120,9 @@ namespace GroundTerminalApp.Tests
             return true;
         }
 
+        /* Function:    IsValidPassword                                                                                  */
+        /* Purpose:     Ensures password is not empty and has minimum length requirement.                                 */
+        /* Returns:     true if valid, otherwise false.                                                                    */
         public static bool IsValidPassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
@@ -134,18 +134,23 @@ namespace GroundTerminalApp.Tests
             return true;
         }
 
+        /* Function:    SanitizeUsername                                                                                 */
+        /* Purpose:     Trims whitespace and converts username to lowercase for consistency.                               */
+        /* Returns:     Sanitized username string.                                                                         */
         public static string SanitizeUsername(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return string.Empty;
 
-            // Remove leading/trailing spaces and convert to lowercase
             return username.Trim().ToLower();
         }
     }
 
     public static class PasswordHelper
     {
+        /* Function:    CheckPasswordStrength                                                                            */
+        /* Purpose:     Rates password as Weak / Medium / Strong based on character variety and length.                   */
+        /* Returns:     Strength rating string.                                                                            */
         public static string CheckPasswordStrength(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
@@ -153,23 +158,18 @@ namespace GroundTerminalApp.Tests
 
             int score = 0;
 
-            // Check length
             if (password.Length >= 8)
                 score++;
 
-            // Check for lowercase
             if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]"))
                 score++;
 
-            // Check for uppercase
             if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]"))
                 score++;
 
-            // Check for digits
             if (System.Text.RegularExpressions.Regex.IsMatch(password, @"\d"))
                 score++;
 
-            // Check for special characters
             if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
                 score++;
 
