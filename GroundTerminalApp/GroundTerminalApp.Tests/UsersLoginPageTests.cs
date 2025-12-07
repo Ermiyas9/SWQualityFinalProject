@@ -27,14 +27,14 @@ namespace GroundTerminalApp.Tests
             var credentials = new UsersLoginPage.LoginCredentials
             {
                 Username = "quang_minh",
-                Password = "T3182001a@",
-                IsValid = !string.IsNullOrEmpty("Username") && !string.IsNullOrEmpty("Password")
+                Password = "T3182001a@"
             };
-
+            credentials.IsValid = !string.IsNullOrEmpty(credentials.Username) &&
+                                  !string.IsNullOrEmpty(credentials.Password);
             // Assert
             Assert.IsTrue(credentials.IsValid, "IsValid should be true when both username and password are provided");
-            Assert.AreEqual("john_doe", credentials.Username);
-            Assert.AreEqual("SecurePass123", credentials.Password);
+            Assert.AreEqual("quang_minh", credentials.Username);
+            Assert.AreEqual("T3182001a@", credentials.Password);
         }
 
         /* Test:       LoginCredentials_EmptyUsername_IsValidFalse                                                      */
